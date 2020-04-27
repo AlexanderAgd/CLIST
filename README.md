@@ -1,6 +1,6 @@
 # CLIST
 Universal list solution for C language.
-Supports all kind of data: char, short int, int, long int, void, long double and other.
+Supports all kind of data in a list: char, short int, int, long int, void, long double and other.
 <pre>  
 typedef struct CList  
 {  
@@ -11,8 +11,13 @@ typedef struct CList
 } CList;  
 </pre>  
 One universal function:  
-void CList_exec(CList *list, void *obj, int *num, enum CListMode mode);  
+<pre>
+void CList_exec(CList *list, void *obj, int *num, enum CListMode mode);
+</pre>
 Does all necessary operation with a list depend on the CListMode mode, see clist.h header.
 Manual and automated memory size allocation when use initialization of array and
 automated reallocation of memory size when adding or inserting new elements.
-Add your remarks or question if any :) THanks.
+May be used on x16 x32 x64 bit systems, any OS that supports C standart library:
+Windows, Linux, Mac OS, any Unix, Android, iOS and others ...
+Find bug crash ? Its new code - inform me to fix.
+Add your remarks or question if any :) Thanks.
