@@ -1,18 +1,102 @@
+/******************************************/
+/*                                        */
+/*        Alexander Agdgomlishvili        */
+/*                                        */
+/*         cdevelopment@mail.com          */
+/*                                        */
+/******************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "clist.h"
 
-void CListInfo(CList *list)
-{
-  printf("-----------\n\n");	
-  printf("list - %p \n&list - %p \n*list - %p\n", list, &list, *list);
-  printf("list->item_size - %i \n&(list->item_size) - %p \n", list->item_size, &(list->item_size));
+enum DataType
+{                    /* bytes below true at least for x64 bit system */
+  type_char,         /* 1 byte */
+  type_short,        /* 2 byte */
+  type_int,          /* 4 byte */
+  type_void,         /* 8 byte */
+  type_long_double   /* 16 byte */
+};
 
-  list->item_size = 111;
-}
+void CListInfo(CList *list, enum DataType byte);
 
 int main(int argc, char **argv)
 {
+  printf("\n\n");
+
+  void *obj = NULL;
+  int i = 0;
+  int n = 0;
+  CList list = { .count = 0,
+                 .alloc_size = 0,
+                 .item_size = sizeof(char), /* 1 byte */
+                 .items = NULL
+               };
+
+  CList_exec(&list, NULL, NULL, CList_Init); /* 128 byte allocated for char array */
+
+  CListInfo(&list, type_char);
+  
+  for (i = 33; i < 118; i++)
+  { 
+    obj = &i;  
+    CList_exec(&list, obj, NULL, CList_Add); /* Adding obj items to the end of array */
+  }
+
+  CListInfo(&list, type_char);
+
+  n = 32;
+  char ch = 'A';
+  CList_exec(&list, obj, &n, CList_Get); /* Get 32nd item of array */
+  ch = *((char*) obj);
+  printf("Position %i contains symbol \'%c\'\n", n, ch);
+
+  ch = '!';
+  obj = &ch;
+  CList_exec(&list, obj, &n, CList_FirstIndex);  /* Find first index of '!' char */
+  printf("Index of \'%c\' is %i\n", ch, n);
+
+  ch = '+';
+  CList_exec(&list, obj, &n, CList_FirstIndex);
+  printf("Index of \'%c\' is %i\n\n", ch, n);
+
+  n = 0;
+  for (i = 15; i > 0; i--)
+    CList_exec(&list, obj, &n, CList_Remove); /* Remove item at index 0 from array 15 times */
+
+  CListInfo(&list, type_char);
+
+  CList_exec(&list, NULL, NULL, CList_Clear); /* Clear struct list and free its array "items" */
+                                              /* Only item_size is unchanged. */
+
+  /*******************************************************/
+
+  list.item_size = sizeof(short); /* 2 byte */
+  
+  short sh = 1001;
+  for (i = 0; i < 24; i++, sh += 1000)
+  {
+    obj = &sh;
+    CList_exec(&list, obj, NULL, CList_Add); /* No CList_Init used  after clear, automated allocation */ 
+  }
+
+  CListInfo(&list, type_short);
+
+  sh = 5001;
+  n = 20;
+  CList_exec(&list, obj, &n, CList_Insert);   /* Insert value of 'sh' to position 20 */
+  n = 25;
+  CList_exec(&list, obj, &n, CList_Insert);   /* Insert value of 'sh' to position 25 */
+  
+  CListInfo(&list, type_short);
+
+  n = 0;
+  CList_exec(&list, obj, &n, CList_LastIndex); /* Find last index of '5001' short */
+  printf("Last index of \'%i\' is %i\n", sh, n);
+
+  
+  /*******************************************************/
   CList *lst = malloc(sizeof(CList));
   lst->item_size = 2;
   int size = 3;
@@ -37,35 +121,58 @@ int main(int argc, char **argv)
   dig = 11;
   CList_exec(lst, &dig, pos, CList_Insert);
 
-  p = 0;
-
-  CList_exec(lst, ptr, &p, CList_Get);
-
-  fprintf(stdout, "\n\nHello LIST\n");
-  fprintf(stdout, "Count %i \nAlloc_size %i \n", lst->count, lst->alloc_size);
-  fprintf(stdout, "Item_size %i \nptr value %i \n", lst->item_size, *ptr);
-  fprintf(stdout, "=================================================\n\n");
-
-  block = 23;
-  CList_exec(lst, ptr, &p, CList_LastIndex);
-  printf("p = %d \n\n", p);
-
-  ptr = (short*) lst->items; 
-  size_t i = 0;
-  for (i; i<lst->count; i++)
-    printf("%i \n", ptr[i]);
-  printf("-----------\n"); 
-
-  p = 2;
-  CList_exec(lst, NULL, &p, CList_Remove);
-
-    ptr = (short*) lst->items;
-  for (i=0; i<lst->count; i++)
-    printf("%i \n", ptr[i]);
-
-  //printf("lst - %p \n&lst - %p \n*lst - %p\n", lst, &lst, *lst);
-  //printf("lst->item_size - %i \n&(lst->item_size) - %p \n", lst->item_size, &(lst->item_size));
-  //testIt(lst);
-  //printf("\nlst->item_size == %i\n", lst->item_size);
   return 0;
+}
+
+void CListInfo(CList *list, enum DataType byte)
+{
+  printf("CList:   count = %lu   alloc_size = %lu   item_size = %lu    -----------------------\n", 
+    list->count, list->alloc_size, list->item_size);
+
+  size_t i = 0;
+  switch(byte)
+  {
+    case type_char:
+    {
+      char *data = (char*) list->items;
+      for (; i < list->count; i++)
+        printf("%c ", data[i]);
+      break;
+    }  
+    case type_short:
+    {
+      short *data = (short*) list->items;
+      for (; i < list->count; i++)
+        printf("%hi ", data[i]);
+      break;
+    }  
+    case type_int:
+    {
+      int *data = (int*) list->items;
+      for (; i < list->count; i++)
+        printf("%i ", data[i]);
+      break;
+    }  
+    case type_void:
+    {
+      long int *data = list->items;
+      for (; i < list->count; i++)
+        printf("%p ", data[i]);
+      break;
+    }  
+    case type_long_double:
+    {
+      long double *data = (long double*) list->items;
+      for (; i < list->count; i++)
+        printf("%llf ", data[i]);
+      break;
+    }  
+    default:
+    {
+      printf("CList: CListInfo - wrong DataType value!\n");
+      break;
+    }
+  }   
+
+  printf("\n\n");                    
 }
