@@ -1,8 +1,11 @@
 
-
-#
-#  COPYRIGHTS
-#
+#/******************************************/
+#/*                                        */
+#/*        Alexander Agdgomlishvili        */
+#/*                                        */
+#/*         cdevelopment@mail.com          */
+#/*                                        */
+#/******************************************/
 
 src = main.c clist.c
 
@@ -17,8 +20,6 @@ CC = gcc -g -W -O2 $(Cflags)
 LIB = libclist.a
 
 TARGET = test
-
-# release  EXECUTABLE STRIP
 
 all :  LIBRARY EXECUTABLE
 

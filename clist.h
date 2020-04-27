@@ -1,3 +1,11 @@
+/******************************************/
+/*                                        */
+/*        Alexander Agdgomlishvili        */
+/*                                        */
+/*         cdevelopment@mail.com          */
+/*                                        */
+/******************************************/
+
 #ifndef CLIST_H
 #define CLIST_H
 
@@ -20,10 +28,10 @@ enum CListMode
 
 typedef struct CList
 {
-  size_t count;
-  size_t alloc_size;
-  size_t item_size;
-  void *items;
+  size_t count;      /* Number of items in the list. */
+  size_t alloc_size; /* Allocated size in quantity of items - not bytes! */
+  size_t item_size;  /* Size of each item in bytes. */
+  void *items;       /* Pointer to the array list */
 } CList;
 
 void CList_exec(CList *list, void *obj, int *num, enum CListMode mode);

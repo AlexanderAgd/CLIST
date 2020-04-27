@@ -1,3 +1,10 @@
+/******************************************/
+/*                                        */
+/*        Alexander Agdgomlishvili        */
+/*                                        */
+/*         cdevelopment@mail.com          */
+/*                                        */
+/******************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,24 +12,31 @@
 #include <assert.h>
 #include "clist.h"
 
+/* 
+#define DEBUG
+*/
+
 void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 {
-  switch(mode)
+  if (num != NULL && *num < 0)
+  {
+    fprintf(stderr, "CList: ERROR! num = %i value canot be less than 0.\n", *num);
+    assert(*num >= 0);
+    return;
+  }  
+
+  switch (mode)
   {
     case CList_Init:
     {
       if (sizeof(void*) != 8 && sizeof(void*) != 4)
-      {
-        fprintf(stderr, "CList: Unknown device, not 32 or 64 bit system!");
-        assert(0);
-        return;
-      }
+        fprintf(stderr, "CList: WARNING! Unknown device, not 32 or 64 bit system!");
 
-      if (list->item_size > 8)
-        fprintf(stderr, "CList: WARNING! Object size more than 8.");
+      if (list->item_size > 16)
+        fprintf(stderr, "CList: WARNING! Object size more than 16. Try use pointers.");
 
       size_t size = *num;
-      if (size == 0 || num == NULL)
+      if (size <= 0 || num == NULL)
         size = 128;
 
       list->items = malloc(list->item_size * size);
@@ -63,12 +77,14 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
       if (list->items == NULL)
       {
-        fprintf(stderr, "CList: can not reallocate memory!\n");
+        fprintf(stderr, "CList: ERROR! can not reallocate memory!\n");
         assert(list->items != NULL);
       }
 
+      #ifdef DEBUG
       fprintf(stdout, "CList: Reallocated %d bytes or %d items.\n", 
                list->item_size * size, size);
+      #endif
 
       list->alloc_size = size;
       break;
@@ -80,9 +96,9 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         CList_exec(list, NULL, NULL, CList_ReAlloc);
     
       char *data = (char*) list->items;
-      char *item = (char*) obj;
+      //char *item = (char*) obj;
       data = data + list->count * list->item_size;
-      memcpy(data, item, list->item_size);
+      memcpy(data, obj, list->item_size);
       list->count++;
 
       break;
@@ -93,7 +109,8 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t pos = *num;
       if (pos > list->count)
       {
-        fprintf(stderr, "CList: Position outside range - %d; pos - %d.\n", list->count - 1, pos);
+        fprintf(stderr, "CList: ERROR! Position outside range - %d; pos - %d.\n", 
+                          list->count - 1, pos);
         assert(pos <= list->count);
         break;
       }
@@ -104,12 +121,12 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t step = list->item_size;
       size_t i = list->count * step;
       char *data = (char*) list->items;
-      char *item = (char*) obj;
+      //char *item = (char*) obj;
 
       for (; i > pos * step; i -= step)
         memcpy(data + i, data + i - step, step);
         
-      memcpy(data + i, item, step);
+      memcpy(data + i, obj, step);
       list->count++;
       break;
     }
@@ -118,9 +135,9 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      char *item = (char*) obj;
+      //char *item = (char*) obj;
       data = data + pos * list->item_size;
-      memcpy(item, data, list->item_size);
+      memcpy(obj, data, list->item_size);
       break;
     }
 
@@ -128,13 +145,13 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      char *item = (char*) obj;
+      //char *item = (char*) obj;
       size_t step = list->item_size;
       size_t i = 0;
       *num = -1;
       for (; i < list->count * step; i += step)
       {
-        if (strncmp(data + i, item, step) == 0)
+        if (strncmp(data + i, obj, step) == 0)
         {
           *num = i / step;
           break;
@@ -148,13 +165,13 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      char *item = (char*) obj;
+      //char *item = (char*) obj;
       size_t step = list->item_size;
       long int i = list->count * step - step;
       *num = -1;
       for (; i >= 0 ; i -= step)
       {
-        if (strncmp(data + i, item, step) == 0)
+        if (strncmp(data + i, obj, step) == 0)
         {
           *num = i / step;
           break;
@@ -170,13 +187,13 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 	
       if (num == NULL)
       {
-        fprintf(stderr, "CList: ERROR! Index \'n\' is NULL.\n");
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
         assert(num != NULL);
         break;
       }
       else if (pos >= list->count)
       {
-        fprintf(stderr, "CList: Outside range - %d; pos - %d.\n", list->count - 1, pos);
+        fprintf(stderr, "CList: ERROR! Outside range - %d; pos - %d.\n", list->count - 1, pos);
         assert(pos < list->count);
         break;
       }
@@ -184,7 +201,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t step = list->item_size;
       size_t i = pos * step;
       char *data = (char*) list->items;
-      char *item = (char*) obj;
 
       for (; i < list->count * step; i += step)
        memcpy(data + i, data + i + step, step);       
@@ -204,7 +220,7 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     default:
     {
-      fprintf(stderr, "CList: WARNING! Wrong \'CListMode\' enum used.\n");
+      fprintf(stderr, "CList: WARNING! Wrong enum \'CListMode\' value used.\n");
       break;
     }
   }
