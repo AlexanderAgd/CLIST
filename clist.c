@@ -35,9 +35,11 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       if (list->item_size > 16)
         fprintf(stderr, "CList: WARNING! Object size more than 16. Try use pointers.");
 
-      size_t size = *num;
-      if (size <= 0 || num == NULL)
+      size_t size;
+      if (num == NULL || *num == 0)
         size = 128;
+      else
+        size = *num;
 
       list->items = malloc(list->item_size * size);
       list->alloc_size = size;

@@ -24,7 +24,7 @@ enum CListMode
   CList_FirstIndex,
   CList_LastIndex,
   CList_Clear
-} CListMode;
+};
 
 typedef struct CList
 {
