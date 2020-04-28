@@ -7,13 +7,13 @@
 #/*                                        */
 #/******************************************/
 
-src = main.c clist.c
+src = test.c clist.c
 
 headers = clist.h
 
 libObjects = clist.o
 
-objects = $(libObjects) main.o
+objects = $(libObjects) test.o
 
 CC = gcc -g -W -O2 $(Cflags)
 
