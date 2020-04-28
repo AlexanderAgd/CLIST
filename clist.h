@@ -15,15 +15,15 @@ extern "C" {
 
 enum CListMode
 {
-  CList_Init,
-  CList_ReAlloc,
-  CList_Add,
-  CList_Insert,
-  CList_Remove,
-  CList_Get,
-  CList_FirstIndex,
-  CList_LastIndex,
-  CList_Clear
+  CList_Init,       /* List allocating - size may be manual or automated */
+  CList_ReAlloc,    /* List size reallocating - size manual or automated */
+  CList_Add,        /* Add object to the end of a list */
+  CList_Insert,     /* Insert object at position 'N' */
+  CList_Remove,     /* Remove object at position 'N' */
+  CList_Get,        /* Get object at position 'N' */
+  CList_FirstIndex, /* Get first index of the object */
+  CList_LastIndex,  /* Get last index of the object */
+  CList_Clear       /* Clear list */
 };
 
 typedef struct CList
