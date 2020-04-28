@@ -123,7 +123,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t step = list->item_size;
       size_t i = list->count * step;
       char *data = (char*) list->items;
-      //char *item = (char*) obj;
 
       for (; i > pos * step; i -= step)
         memcpy(data + i, data + i - step, step);
@@ -137,7 +136,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      //char *item = (char*) obj;
       data = data + pos * list->item_size;
       memcpy(obj, data, list->item_size);
       break;
@@ -147,7 +145,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      //char *item = (char*) obj;
       size_t step = list->item_size;
       size_t i = 0;
       *num = -1;
@@ -167,7 +164,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       size_t pos = *num;
       char *data = (char*) list->items;
-      //char *item = (char*) obj;
       size_t step = list->item_size;
       long int i = list->count * step - step;
       *num = -1;
