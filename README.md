@@ -19,5 +19,6 @@ Does all necessary operation with a list depend on the CListMode mode, see clist
 Manual and automated memory size allocation when use initialization of list and
 automated reallocation of memory size when adding or inserting new elements.
 May be used on x16 x32 x64 bit systems, any OS that supports C standart library:
-Windows, Linux, Mac OS, any Unix, Android, iOS and others ...
+Windows, Linux, Mac OS, any Unix, Android, iOS and others. Examples of usage can be find
+in 'test.c' file.     
 Add your remarks or question if any :) Thanks.
