@@ -72,12 +72,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         }
       }
 
-      list->items = realloc(list->items, list->item_size * size);
+      void *ptr = realloc(list->items, list->item_size * size);
 
-      if (list->items == NULL)
+      if (ptr == NULL)
       {
         fprintf(stderr, "CList: ERROR! can not reallocate memory!\n");
-        assert(list->items != NULL);
+        assert(ptr != NULL);
       }
 
       #ifdef DEBUG
@@ -85,6 +85,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
                list->item_size * size, size);
       #endif
 
+      list->items = ptr;
       list->alloc_size = size;
       break;
     }
@@ -104,17 +105,17 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_Insert:
     {
+      if (list->count == list->alloc_size)
+        CList_exec(list, NULL, NULL, CList_ReAlloc);
+
       size_t pos = *num;
       if (pos > list->count)
       {
-        fprintf(stderr, "CList: ERROR! Position outside range - %d; pos - %d.\n", 
+        fprintf(stderr, "CList: ERROR! Insert position outside range - %d; pos - %d.\n", 
                           list->count, pos);
         assert(pos <= list->count);
         break;
       }
-
-      if (list->count == list->alloc_size)
-        CList_exec(list, NULL, NULL, CList_ReAlloc);
 
       size_t step = list->item_size;
       size_t i = list->count * step;
@@ -133,7 +134,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t pos = *num;
       if (pos >= list->count)
       {
-        fprintf(stderr, "CList: ERROR! Position outside range - %d; pos - %d.\n", 
+        fprintf(stderr, "CList: ERROR! Replace position outside range - %d; pos - %d.\n", 
                           list->count, pos);
         assert(pos < list->count);
         break;
@@ -147,6 +148,13 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     case CList_Get:
     {
       size_t pos = *num;
+      if (pos >= list->count)
+      {
+        fprintf(stderr, "CList: ERROR! Get position outside range - %d; pos - %d.\n", 
+                          list->count, pos);
+        assert(pos < list->count);
+        break;
+      }      
       char *data = (char*) list->items;
       data = data + pos * list->item_size;
       return data;
@@ -202,7 +210,8 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       }
       else if (pos >= list->count)
       {
-        fprintf(stderr, "CList: ERROR! Outside range - %d; pos - %d.\n", list->count - 1, pos);
+        fprintf(stderr, "CList: ERROR! Remove position outside range - %d; pos - %d.\n",
+                          list->count - 1, pos);
         assert(pos < list->count);
         break;
       }

@@ -37,7 +37,7 @@ int main(int argc, char **argv)
                  .items = NULL
                };
 
-  CList_exec(&list, NULL, NULL, CList_Init); /* 128 byte allocated for char array */
+  CList_exec(&list, NULL, NULL, CList_Init); /* 128 byte allocated  automatically for char array */
 
   printf("\n\n");
   CListInfo(&list, type_char);
@@ -192,11 +192,11 @@ int main(int argc, char **argv)
   struct sample sm1 = { 64, 6.4, 4, &n, 16, obj };
   struct sample sm2 = { 128, 12.8, 8, &j, { 1024 }, (void*)&sh }; /* Just some sample data */
 
-  uintptr_t ptr = (uintptr_t) &sm1;    /* Cast reference to address value */
-  CList_exec(newlist, &ptr, NULL, CList_Add);
+  uintptr_t addr = (uintptr_t) &sm1;    /* Cast reference to address value */
+  CList_exec(newlist, &addr, NULL, CList_Add);
 
-  ptr = (uintptr_t) &sm2;
-  CList_exec(newlist, &ptr, NULL, CList_Add);
+  addr = (uintptr_t) &sm2;
+  CList_exec(newlist, &addr, NULL, CList_Add);
 
   struct sample *sm3 = malloc(sizeof(sample));
   sm3->l = 256;
@@ -206,8 +206,8 @@ int main(int argc, char **argv)
   sm3->u.lli = 2048;
   sm3->dat = (void*) &sm2;
 
-  ptr = (uintptr_t) sm3;
-  CList_exec(newlist, &ptr, NULL, CList_Add);
+  addr = (uintptr_t) sm3;
+  CList_exec(newlist, &addr, NULL, CList_Add);
 
   CListInfo(newlist, type_void_ptr);
 
@@ -215,8 +215,8 @@ int main(int argc, char **argv)
   {  
     for (i = 0, n = 0; i < 3; i++, n++)
     {
-      uintptr_t *pt = CList_exec(newlist, NULL, &n, CList_Get);
-      struct sample *sam = (struct sample*) *pt; /* Cast address value to struct pointer */
+      uintptr_t *ad = CList_exec(newlist, NULL, &n, CList_Get);
+      struct sample *sam = (struct sample*) *ad; /* Cast address value to struct pointer */
       switch (j)
       {
         case 0: printf("%15li ", sam->l); break;
