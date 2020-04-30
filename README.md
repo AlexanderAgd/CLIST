@@ -1,6 +1,6 @@
 # CLIST
 Universal list solution for C language.
-Supports all kind of data in a list: char, short, int, long, void, long double, structs.
+Supports all kind of data in a list: char, short, int, long, void, pointes, long double, structs.
 One enum, one struct and one function - very EASY.
 <pre>  
 typedef struct CList  
