@@ -17,8 +17,7 @@ enum DataType
   type_char,         /* 1 byte */
   type_short,        /* 2 byte */
   type_int,          /* 4 byte */
-  type_void,         /* 8 byte */
-  type_long_double   /* 16 byte */
+  type_void_ptr,         /* 8 byte */
 };
 
 void CListInfo(CList *list, enum DataType byte);
@@ -28,8 +27,6 @@ void CListInfo(CList *list, enum DataType byte);
 int main(int argc, char **argv)
 {
   /******************************************************* CHAR ARRAY */
-
-  printf("\n\n");      
 
   void *obj = NULL;
   int i = 0;
@@ -42,9 +39,10 @@ int main(int argc, char **argv)
 
   CList_exec(&list, NULL, NULL, CList_Init); /* 128 byte allocated for char array */
 
+  printf("\n\n");
   CListInfo(&list, type_char);
   
-  for (i = 33; i < 118; i++)
+  for (i = 33; i < 123; i++)
   { 
     obj = &i;  
     CList_exec(&list, obj, NULL, CList_Add); /* Adding obj items to the end of array */
@@ -155,10 +153,10 @@ int main(int argc, char **argv)
     CList_exec(newlist, obj, &n, CList_Insert); /* Insert each object at index '0' of array */
   }
 
-  CListInfo(newlist, type_void);
+  CListInfo(newlist, type_void_ptr);
 
   int j;
-  for (j = 0; j < 6; j++, i = 0)  /* Printf out struct content */
+  for (j = 0; j < 6; j++, i = 0)  /* Print out struct content */
   {  
     for (i = 0, n = 0; i < 8; i++, n++)
     {
@@ -211,9 +209,9 @@ int main(int argc, char **argv)
   ptr = (uintptr_t) sm3;
   CList_exec(newlist, &ptr, NULL, CList_Add);
 
-  CListInfo(newlist, type_void);
+  CListInfo(newlist, type_void_ptr);
 
-  for (j = 0; j < 6; j++, i = 0) /* Printf out struct content */
+  for (j = 0; j < 6; j++, i = 0) /* Print out struct content */
   {  
     for (i = 0, n = 0; i < 3; i++, n++)
     {
@@ -231,8 +229,9 @@ int main(int argc, char **argv)
       }
     }
     printf("\n");
-  }  
+  }
 
+  printf("\n");
   free(sm3);
   CList_exec(newlist, NULL, NULL, CList_Clear);
   free(newlist);
@@ -269,20 +268,13 @@ void CListInfo(CList *list, enum DataType byte)
         printf("%i ", data[i]);
       break;
     }
-    case type_void:
+    case type_void_ptr:
     {
       void *data = list->items;
-      for (; i < list->count; i++)
-       { printf("%p  ", data); data += list->item_size; }
+      for (; i < list->count; i++, data += list->item_size)
+        printf("%p  ", data);
       break;
     } 
-    case type_long_double:
-    {
-      long double *data = (long double*) list->items;
-      for (; i < list->count; i++)
-        printf("%llg ", data[i]);
-      break;
-    }
     default:
     {
       printf("CList: CListInfo - wrong DataType value!\n");
