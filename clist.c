@@ -16,13 +16,13 @@
 #define DEBUG
 */
 
-void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
+void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 {
   if (num != NULL && *num < 0)
   {
     fprintf(stderr, "CList: ERROR! num = %i value canot be less than 0.\n", *num);
     assert(*num >= 0);
-    return;
+    return NULL;
   }  
 
   switch (mode)
@@ -31,9 +31,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     {
       if (sizeof(void*) != 8 && sizeof(void*) != 4)
         fprintf(stderr, "CList: WARNING! Unknown device, not 32 or 64 bit system!");
-
-      if (list->item_size > 16)
-        fprintf(stderr, "CList: WARNING! Object size more than 16. Try use pointers.");
 
       size_t size;
       if (num == NULL || *num == 0)
@@ -98,7 +95,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         CList_exec(list, NULL, NULL, CList_ReAlloc);
     
       char *data = (char*) list->items;
-      //char *item = (char*) obj;
       data = data + list->count * list->item_size;
       memcpy(data, obj, list->item_size);
       list->count++;
@@ -112,7 +108,7 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       if (pos > list->count)
       {
         fprintf(stderr, "CList: ERROR! Position outside range - %d; pos - %d.\n", 
-                          list->count - 1, pos);
+                          list->count, pos);
         assert(pos <= list->count);
         break;
       }
@@ -126,9 +122,25 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
       for (; i > pos * step; i -= step)
         memcpy(data + i, data + i - step, step);
-        
+
       memcpy(data + i, obj, step);
       list->count++;
+      break;
+    }
+
+    case CList_Replace:
+    {
+      size_t pos = *num;
+      if (pos >= list->count)
+      {
+        fprintf(stderr, "CList: ERROR! Position outside range - %d; pos - %d.\n", 
+                          list->count, pos);
+        assert(pos < list->count);
+        break;
+      }
+      char *data = (char*) list->items;
+      data = data + pos * list->item_size;
+      memcpy(data, obj, list->item_size);
       break;
     }
 
@@ -137,8 +149,7 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t pos = *num;
       char *data = (char*) list->items;
       data = data + pos * list->item_size;
-      memcpy(obj, data, list->item_size);
-      break;
+      return data;
     }
 
     case CList_FirstIndex:
@@ -222,4 +233,6 @@ void CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       break;
     }
   }
+
+  return NULL;
 }

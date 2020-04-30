@@ -19,6 +19,7 @@ enum CListMode
   CList_ReAlloc,     /* List size reallocating - size manual or automated */
   CList_Add,         /* Add object to the end of a list */
   CList_Insert,      /* Insert object at position 'N' */
+  CList_Replace,     /* Replace object at position 'N' */
   CList_Remove,      /* Remove object at position 'N' */
   CList_Get,         /* Get object at position 'N' */
   CList_FirstIndex,  /* Get first index of the object */
@@ -34,7 +35,7 @@ typedef struct CList
   void *items;       /* Pointer to the array list */
 } CList;
 
-void CList_exec(CList *list, void *obj, int *num, enum CListMode mode);
+void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode);
 
 #ifdef __cplusplus
 }
