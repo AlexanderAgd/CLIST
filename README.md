@@ -1,7 +1,7 @@
 # CLIST
 C List, universal list solution for C language.
-Supports all kind of data in a list: char, short, int, long, void, pointers, long double, structs.
-One enum, one struct and one function - very EASY.
+Supports all kind of data in a list: char, short, int, long, void, void pointers, long double, structs.
+One enum, one struct and one function - very easy to use.
 <pre>  
 typedef struct CList  
 {  
@@ -20,5 +20,58 @@ Manual and automated memory size allocation when use initialization of list and
 automated reallocation of memory size when adding or inserting new elements.
 May be used on x16 x32 x64 bit systems, any OS that supports C standart library:
 Windows, Linux, Mac OS, any Unix, Android, iOS and others. Examples of usage can be find
-in 'test.c' file.     
-Add your remarks or question if any :) Thanks.
+in 'test.c' file.  
+Enum sets supported operations:  
+<pre>
+enum CListMode
+{
+  CList_Init,        /* List allocating - size may be manual or automated */
+  CList_ReAlloc,     /* List size reallocating - size manual or automated */
+  CList_Add,         /* Add object to the end of a list */
+  CList_Insert,      /* Insert object at position 'N' */
+  CList_Replace,     /* Replace object at position 'N' */
+  CList_Remove,      /* Remove object at position 'N' */
+  CList_Get,         /* Get object at position 'N' */
+  CList_FirstIndex,  /* Get first index of the object */
+  CList_LastIndex,   /* Get last index of the object */
+  CList_Clear        /* Clear list */
+}; 
+</pre> 
+
+## Build
+Just make command:
+<pre>
+make	
+</pre>
+Run test executable for perfomance and example of work.
+
+## License
+
+BSD 2-Clause License
+
+Copyright (c) 2020, Alexander Agdgomlishvili
+cdevelopment@mail.com
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

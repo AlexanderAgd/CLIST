@@ -6,6 +6,16 @@
 /*                                        */
 /******************************************/
 
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+#include <unistd.h>
+#endif
+
+#if defined(_POSIX_VERSION)
+#include <sys/time.h>
+#elif defined(WIN32)
+#include <Winsock2.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,16 +23,23 @@
 #include "clist.h"
 
 enum DataType
-{                    /* bytes below true at least for x64 bit system */
+{                    /* bytes below true for x64 bit system */
   type_char,         /* 1 byte */
   type_short,        /* 2 byte */
   type_int,          /* 4 byte */
-  type_void_ptr,         /* 8 byte */
+  type_void_ptr,     /* 8 byte */
 };
 
 void CListInfo(CList *list, enum DataType byte);
 
-/*    USAGE    */
+#if defined(WIN32)
+int gettimeofday(struct timeval *tp, void *tzp);
+#endif
+
+size_t diff_usec(struct timeval start, struct timeval end)
+{ 
+  return (1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec);
+}
 
 int main(int argc, char **argv)
 {
@@ -39,7 +56,7 @@ int main(int argc, char **argv)
 
   CList_exec(&list, NULL, NULL, CList_Init); /* 128 byte allocated  automatically for char array */
 
-  printf("\n\n");
+  printf("\n");
   CListInfo(&list, type_char);
   
   for (i = 33; i < 123; i++)
@@ -236,8 +253,69 @@ int main(int argc, char **argv)
   CList_exec(newlist, NULL, NULL, CList_Clear);
   free(newlist);
 
+  /******************************************************* PERFOMANCE TEST */
+
+  size_t time;
+  i = 0;
+  n = 10000;
+  list.item_size = sizeof(int);
+  struct timeval start;
+  struct timeval end;
+
+  printf("PERFOMACE TEST - 1 second contains 1000000 microseconds\n\n");
+  
+  gettimeofday(&start, NULL);
+  CList_exec(&list, NULL, &n, CList_Init); /*   */
+  gettimeofday(&end, NULL);
+
+  time = diff_usec(start, end);
+  printf("Initialization of %i int array takes  -  %lu microseconds\n", n, time);
+
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    CList_exec(&list, &i, NULL, CList_Add);
+  gettimeofday(&end, NULL);
+
+  time = diff_usec(start, end);
+  printf("Add of %i int to array takes  -  %lu microseconds\n", n, time);
+
+  int pos = 0;
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    CList_exec(&list, NULL, &pos, CList_Remove);
+  gettimeofday(&end, NULL);
+
+  time = diff_usec(start, end);
+  printf("Remove from position '0' of %i int of array takes  -  %lu microseconds\n", n, time);
+
+  //CList_exec(&list, NULL, NULL, CList_Clear);
+  //CList_exec(&list, NULL, &n, CList_Init);
+
+  pos = 0;
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    CList_exec(&list, &i, &pos, CList_Insert);
+  gettimeofday(&end, NULL);
+
+  time = diff_usec(start, end);
+  printf("Insert to position '0' of %i int to array takes  -  %lu microseconds\n", n, time);
+
+  for(i=0; i < n; i++)
+    CList_exec(&list, &i, NULL, CList_Add); /*** Refill array ***/
+
+  pos = 0;
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    CList_exec(&list, &n, &i, CList_Replace);
+  gettimeofday(&end, NULL);
+
+  time = diff_usec(start, end);
+  printf("Replace of %i int in array takes  -  %lu microseconds\n", n, time);
+
+  printf("\n");
   return 0;
-} /* main */
+
+} /**** MAIN ****/
 
 void CListInfo(CList *list, enum DataType byte)
 {
@@ -284,3 +362,23 @@ void CListInfo(CList *list, enum DataType byte)
 
   printf("\n\n");                    
 }
+
+#if defined(WIN32)
+int gettimeofday(struct timeval *tp, void *tzp)
+{
+  LARGE_INTEGER ticksPerSecond;
+  LARGE_INTEGER tick;
+  LARGE_INTEGER time;
+
+  if (QueryPerformanceFrequency(&ticksPerSecond) == 0) 
+    return -1;
+  QueryPerformanceCounter(&tick);  /* what time is it? */
+
+  time.QuadPart = tick.QuadPart / ticksPerSecond.QuadPart; /* convert the tick number into the number */ 
+                                                           /* of seconds since the system was started...  */
+  tp->tv_sec = time.QuadPart; /* seconds */
+  tp->tv_usec = (tick.QuadPart - (time.QuadPart * ticksPerSecond.QuadPart)) * 
+                     1000000.0 / ticksPerSecond.QuadPart;
+  return 0;
+}
+#endif
