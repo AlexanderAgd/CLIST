@@ -7,7 +7,7 @@
 #/*                                        */
 #/******************************************/
 
-src = test.c clist.c
+src = clist.c test.c
 
 headers = clist.h
 

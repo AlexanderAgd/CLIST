@@ -99,7 +99,6 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       data = data + list->count * list->item_size;
       memcpy(data, obj, list->item_size);
       list->count++;
-
       break;
     }
 
@@ -121,10 +120,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t i = list->count * step;
       char *data = (char*) list->items;
 
-      for (; i > pos * step; i -= step)
+      /*for (; i > pos * step; i -= step)
         memcpy(data + i, data + i - step, step);
+      memcpy(data + i, obj, step);*/
+      memmove(data + pos * step + step, data + pos * step, (list->count - pos) * step);
+      memcpy(data + pos*step, obj, step);
 
-      memcpy(data + i, obj, step);
       list->count++;
       break;
     }
@@ -175,7 +176,6 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
           break;
         }
       }
-
       break;
     }
 
@@ -194,7 +194,6 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
           break;
         }
       }
-        
       break;
     }
   
@@ -220,8 +219,9 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t i = pos * step;
       char *data = (char*) list->items;
 
-      for (; i < list->count * step; i += step)
-       memcpy(data + i, data + i + step, step);       
+      /*for (; i < list->count * step; i += step)
+       memcpy(data + i, data + i + step, step);*/
+      memmove(data + pos * step, data + pos * step + step, (list->count - pos) * step);
 
       list->count--;
       break;
