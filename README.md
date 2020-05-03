@@ -45,6 +45,18 @@ make
 </pre>
 Run test executable for perfomance and example of work.
 
+## Perfomance
+On my PC
+<pre> 
+CPU: Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
+
+Initialization of 10000 int array takes  -  3 microseconds.
+Add of 10000 int to array takes  -  122 microseconds.
+Remove from position '0' of 10000 int of array takes  -  3234 microseconds.
+Insert to position '0' of 10000 int to array takes  -  3514 microseconds.
+Replace of 10000 int in array takes  -  49 microseconds.
+</pre>
+
 ## License
 
 BSD 2-Clause License
