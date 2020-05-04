@@ -30,7 +30,13 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     case CList_Init:
     {
       if (sizeof(void*) != 8 && sizeof(void*) != 4)
-        fprintf(stderr, "CList: WARNING! Unknown device, not 32 or 64 bit system!");
+        fprintf(stderr, "CList: WARNING! Unknown device, not 32 or 64 bit system!\n");
+      else if (list->item_size == 0)
+      {
+        fprintf(stderr, "CList: ERROR! item_size can not be \'0\'!\n");
+        assert(list->item_size);
+        break;
+      }  
 
       size_t size;
       if (num == NULL || *num == 0)
