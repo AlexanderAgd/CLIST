@@ -233,7 +233,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
       size_t step = list->item_size;
       char *data = (char*)list->items + pos * step;
-      memmove(data, data + step, (list->count - pos) * step);
+      memmove(data, data + step, (list->count - pos - 1) * step);
       list->count--;
       break;
     }
