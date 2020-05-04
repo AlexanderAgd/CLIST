@@ -149,7 +149,7 @@ int main(int argc, char **argv)
   newlist->item_size = sizeof(sample);     /* Always set item_size before allocation */
   n = 16;
 
-  CList_exec(newlist, NULL, &n, CList_Init); /* 'newlst->items' allocation */
+  CList_exec(newlist, NULL, &n, CList_Init); /* 'newlist->items' allocation */
 
   printf("Size of struct 'sample' = %i bytes\n\n", sizeof(sample));
 
@@ -256,13 +256,14 @@ int main(int argc, char **argv)
   /******************************************************* PERFOMANCE TEST */
 
   size_t time;
+  int pos = 0;
   i = 0;
   n = 10000;
   list.item_size = sizeof(int);
   struct timeval start;
   struct timeval end;
 
-  printf("PERFOMACE TEST - 1 second contains 1000000 microseconds\n\n");
+  printf("PERFOMANCE TEST - 1 second contains 1000000 microseconds\n\n");
   
   gettimeofday(&start, NULL);
   CList_exec(&list, NULL, &n, CList_Init); /*   */
@@ -279,7 +280,6 @@ int main(int argc, char **argv)
   time = diff_usec(start, end);
   printf("Add of %i int to array takes  -  %lu microseconds\n", n, time);
 
-  int pos = 0;
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
     CList_exec(&list, NULL, &pos, CList_Remove);
@@ -287,9 +287,6 @@ int main(int argc, char **argv)
 
   time = diff_usec(start, end);
   printf("Remove from position '0' of %i int of array takes  -  %lu microseconds\n", n, time);
-
-  //CList_exec(&list, NULL, NULL, CList_Clear);
-  //CList_exec(&list, NULL, &n, CList_Init);
 
   pos = 0;
   gettimeofday(&start, NULL);
@@ -299,9 +296,6 @@ int main(int argc, char **argv)
 
   time = diff_usec(start, end);
   printf("Insert to position '0' of %i int to array takes  -  %lu microseconds\n", n, time);
-
-  for(i=0; i < n; i++)
-    CList_exec(&list, &i, NULL, CList_Add); /*** Refill array ***/
 
   pos = 0;
   gettimeofday(&start, NULL);
@@ -313,6 +307,7 @@ int main(int argc, char **argv)
   printf("Replace of %i int in array takes  -  %lu microseconds\n", n, time);
 
   printf("\n");
+  CList_exec(&list, NULL, NULL, CList_Clear);
   return 0;
 
 } /**** MAIN ****/
