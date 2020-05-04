@@ -23,7 +23,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
     fprintf(stderr, "CList: ERROR! num = %i value canot be less than 0.\n", *num);
     assert(*num >= 0);
     return NULL;
-  }  
+  }
 
   switch (mode)
   {
@@ -104,8 +104,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_Insert:
     {
-      if (list->count == list->alloc_size)
-        CList_exec(list, NULL, NULL, CList_ReAlloc);
+      if (num == NULL)
+      {
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
+        assert(num != NULL);
+        break;
+      }
 
       size_t pos = *num;
       if (pos > list->count)
@@ -116,14 +120,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         break;
       }
 
-      size_t step = list->item_size;
-      size_t i = list->count * step;
-      char *data = (char*) list->items;
+      if (list->count == list->alloc_size)
+        CList_exec(list, NULL, NULL, CList_ReAlloc);
 
-      /*for (; i > pos * step; i -= step)
-        memcpy(data + i, data + i - step, step);
-      memcpy(data + i, obj, step);*/
-      memmove(data + pos * step + step, data + pos * step, (list->count - pos) * step);
+      size_t step = list->item_size;
+      char *data = (char*)list->items + pos * step;
+      memmove(data + step, data, (list->count - pos) * step);
       memcpy(data + pos*step, obj, step);
 
       list->count++;
@@ -132,6 +134,13 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_Replace:
     {
+      if (num == NULL)
+      {
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
+        assert(num != NULL);
+        break;
+      }
+
       size_t pos = *num;
       if (pos >= list->count)
       {
@@ -140,6 +149,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         assert(pos < list->count);
         break;
       }
+
       char *data = (char*) list->items;
       data = data + pos * list->item_size;
       memcpy(data, obj, list->item_size);
@@ -148,6 +158,13 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_Get:
     {
+      if (num == NULL)
+      {
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
+        assert(num != NULL);
+        break;
+      }
+
       size_t pos = *num;
       if (pos >= list->count)
       {
@@ -155,7 +172,8 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
                           list->count, pos);
         assert(pos < list->count);
         break;
-      }      
+      }
+
       char *data = (char*) list->items;
       data = data + pos * list->item_size;
       return data;
@@ -163,7 +181,6 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_FirstIndex:
     {
-      size_t pos = *num;
       char *data = (char*) list->items;
       size_t step = list->item_size;
       size_t i = 0;
@@ -181,7 +198,6 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_LastIndex:
     {
-      size_t pos = *num;
       char *data = (char*) list->items;
       size_t step = list->item_size;
       long int i = list->count * step - step;
@@ -199,15 +215,15 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
   
     case CList_Remove:
     {
-      size_t pos = *num;
-	
       if (num == NULL)
       {
         fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
         assert(num != NULL);
         break;
       }
-      else if (pos >= list->count)
+
+      size_t pos = *num;
+      if (pos >= list->count)
       {
         fprintf(stderr, "CList: ERROR! Remove position outside range - %d; pos - %d.\n",
                           list->count - 1, pos);
@@ -216,13 +232,8 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       }
 
       size_t step = list->item_size;
-      size_t i = pos * step;
-      char *data = (char*) list->items;
-
-      /*for (; i < list->count * step; i += step)
-       memcpy(data + i, data + i + step, step);*/
-      memmove(data + pos * step, data + pos * step + step, (list->count - pos) * step);
-
+      char *data = (char*)list->items + pos * step;
+      memmove(data, data + step, (list->count - pos) * step);
       list->count--;
       break;
     }
