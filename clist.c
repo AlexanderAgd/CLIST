@@ -249,7 +249,8 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     default:
     {
-      fprintf(stderr, "CList: WARNING! Wrong enum \'CListMode\' value used.\n");
+      fprintf(stderr, "CList: ERROR! Wrong enum \'CListMode\' value used.\n");
+      assert(mode >= CList_Init && mode <= CList_Clear);
       break;
     }
   }
