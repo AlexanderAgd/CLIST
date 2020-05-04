@@ -268,7 +268,6 @@ int main(int argc, char **argv)
   gettimeofday(&start, NULL);
   CList_exec(&list, NULL, &n, CList_Init); /*   */
   gettimeofday(&end, NULL);
-
   time = diff_usec(start, end);
   printf("Initialization of %i int array takes  -  %lu microseconds\n", n, time);
 
@@ -276,7 +275,6 @@ int main(int argc, char **argv)
   for(i=0; i < n; i++)
     CList_exec(&list, &i, NULL, CList_Add);
   gettimeofday(&end, NULL);
-
   time = diff_usec(start, end);
   printf("Add of %i int to array takes  -  %lu microseconds\n", n, time);
 
@@ -284,25 +282,20 @@ int main(int argc, char **argv)
   for(i=0; i < n; i++)
     CList_exec(&list, NULL, &pos, CList_Remove);
   gettimeofday(&end, NULL);
-
   time = diff_usec(start, end);
   printf("Remove from position '0' of %i int of array takes  -  %lu microseconds\n", n, time);
 
-  pos = 0;
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
     CList_exec(&list, &i, &pos, CList_Insert);
   gettimeofday(&end, NULL);
-
   time = diff_usec(start, end);
   printf("Insert to position '0' of %i int to array takes  -  %lu microseconds\n", n, time);
 
-  pos = 0;
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
     CList_exec(&list, &n, &i, CList_Replace);
   gettimeofday(&end, NULL);
-
   time = diff_usec(start, end);
   printf("Replace of %i int in array takes  -  %lu microseconds\n", n, time);
 
