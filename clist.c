@@ -126,7 +126,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
       size_t step = list->item_size;
       char *data = (char*)list->items + pos * step;
       memmove(data + step, data, (list->count - pos) * step);
-      memcpy(data + pos*step, obj, step);
+      memcpy(data, obj, step);
 
       list->count++;
       break;
