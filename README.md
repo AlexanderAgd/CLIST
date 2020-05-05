@@ -41,9 +41,9 @@ enum CListMode
 ## Build
 Just make command:
 <pre>
-make	
+make clean && make	
 </pre>
-Run test executable for perfomance and example of work.
+Run test executable for list examples and perfomance.
 
 ## Perfomance
 
