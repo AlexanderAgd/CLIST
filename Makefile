@@ -24,7 +24,7 @@ TARGET = test
 all :  LIBRARY EXECUTABLE
 
 clean :
-	rm -rvf *.o *.png $(LIB) $(TARGET)
+	rm -rvf *.o *.log *.txt $(LIB) $(TARGET)
 
 %.o : %.c
 	$(CC) -c -o $@ $<
@@ -40,5 +40,3 @@ STRIP :
 
 ECHO_STRING :
 	@echo "\n\n-------------------------------------------------------------\n\n"
-
-
