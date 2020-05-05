@@ -175,7 +175,7 @@ int main(int argc, char **argv)
   int j;
   for (j = 0; j < 6; j++, i = 0)  /* Print out struct content */
   {  
-    for (i = 0; i < newlist->count; i++)
+    for (i = 0; i < (int) newlist->count; i++)
     {
       struct sample *sam = CList_exec(newlist, NULL, &i, CList_Get);
 
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
   for (j = 0; j < 6; j++, i = 0) /* Print out struct content */
   {  
-    for (i = 0; i < newlist->count; i++)
+    for (i = 0; i < (int) newlist->count; i++)
     {
       uintptr_t *ad = CList_exec(newlist, NULL, &i, CList_Get);
       struct sample *sam = (struct sample*) *ad; /* Cast address value to struct pointer */
