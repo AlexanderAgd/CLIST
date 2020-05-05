@@ -39,7 +39,7 @@ enum CListMode
 </pre> 
 
 ## Build
-Just make command:
+Clean and build:
 <pre>
 make clean && make	
 </pre>
