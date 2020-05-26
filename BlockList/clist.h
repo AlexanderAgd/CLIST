@@ -23,10 +23,10 @@ enum CListMode
   CList_Get,           /* Get object at position 'N' */
   CList_FirstIndex,    /* Get first index of the object */
   CList_LastIndex,     /* Get last index of the object */
-  CList_Clear,         /* Clear list */
   CList_Count,         /* Get list size */
-  CList_SetBlockSize,  /* Set "block" size */
-  CList_BlockSize      /* Get block size */
+  CList_SetBlockSize,  /* Set "block" size, number of objects in a block */
+  CList_BlockSize,     /* Get block size */
+  CList_Clear          /* Clear list */
 };
 
 typedef struct CList *CList; /* CList is private, Init and use it */ 

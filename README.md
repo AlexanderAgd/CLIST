@@ -36,7 +36,17 @@ enum CListMode
   CList_LastIndex,   /* Get last index of the object */
   CList_Clear        /* Clear list */
 }; 
-</pre> 
+</pre>
+If you are working with a huge number of elements and think that 
+your list holds a lot of memory you can use "CList_Realloc" and 
+specify a little bigger size than number of items in the list:
+<pre>
+int num = list->count + 10; /* Allocate more if plan add items */
+CList_exec(list, NULL, num, CList_Realloc);
+</pre>
+You can check also BlockList version of CList it has more computations 
+and a little slow to compare to current list, but allocates and deallocates
+memory automatically by memory blocks, and CList there has "private" data.
 
 ## Build
 Clean and build:
