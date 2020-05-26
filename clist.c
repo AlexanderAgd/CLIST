@@ -29,9 +29,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
   {
     case CList_Init:
     {
-      if (sizeof(void*) != 8 && sizeof(void*) != 4)
-        fprintf(stderr, "CList: WARNING! Unknown device, not 32 or 64 bit system!\n");
-      else if (list->item_size == 0)
+      if (list->item_size == 0)
       {
         fprintf(stderr, "CList: ERROR! item_size can not be \'0\'!\n");
         assert(list->item_size);
@@ -73,7 +71,7 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
         else
         {
           fprintf(stderr, "CList: You need a lot of memory!\nEdit this code yourself ...\n");
-          assert(size <= 1048576);
+          assert(size < 1048576);
           break;
         }
       }
@@ -187,6 +185,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_FirstIndex:
     {
+      if (num == NULL)
+      {
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
+        assert(num != NULL);
+        break;
+      }      
       char *data = (char*) list->items;
       size_t step = list->item_size;
       size_t i = 0;
@@ -204,6 +208,12 @@ void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
 
     case CList_LastIndex:
     {
+      if (num == NULL)
+      {
+        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
+        assert(num != NULL);
+        break;
+      }      
       char *data = (char*) list->items;
       size_t step = list->item_size;
       long int i = list->count * step - step;
