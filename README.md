@@ -1,52 +1,74 @@
 # CLIST
-C List, universal list solution for C language.
-Supports all kind of data in a list: char, short, int, long, void pointers, long double, structs.
-One enum, one struct and one function - very easy to use.
-<pre>  
-typedef struct CList  
-{  
-  size_t count;       /* Number of items in the list. */  
-  size_t alloc_size;  /* Allocated size in quantity of items */  
-  size_t item_size;   /* Size of each item in bytes. */  
-  void *items;        /* Pointer to the list */  
-} CList;  
-</pre>  
-One universal function:  
+C List, universal list solution for C language. Pure C but compatible to compile with C++.    
+Supports all kind of data in a list: char, short, int, long, pointers, structs.
+One struct and one init function - very easy and comfort usage, example:
 <pre>
-void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode);
+  struct unit
+  {
+    long int size;
+    void *ptr;
+  } unit;
+
+  CList *list = CList_Init(sizeof(unit)); /* Initialization */
+ 
+  long int i; 
+  for (i = 0; i < 10; i++)
+  {
+    struct unit U = { i, &i };
+    list->add(list, &U);        /* Adding data at the end */
+    list->insert(list, &U, 0);  /* Insert at position 0 */    
+  }
+                                /* Get item at position '1' */
+  struct unit *tmp = (struct unit*) list->at(list, 1);  
+  printf("Unit size is %li, pointer is %p \n", tmp->size, tmp->ptr);
+
+  i = list->count(list);        /* Get number of items in the list */
+  list->print(list, i, "long"); /* Print out 'i' elements of list, first element of struct is shown */
+
+  list->free(list);             /* Destroy all data and list */ 
+</pre>  
+CList struct contains pointers to list functions   
+<pre>
+
 </pre>
-Does all necessary operation with a list depend on the CListMode mode, see clist.h header.
-Manual and automated memory size allocation when use initialization of list and
-automated reallocation of memory size when adding or inserting new elements.
-May be used on x16 x32 x64 bit systems, any OS that supports C standart library:
+Code may be used as static library or just included in your own code as object.
+Automated reallocation of memory block only at some points when adding, inserting or removing elements.
+May be used on any OS that supports C standart library:
 Windows, Linux, Mac OS, any Unix, Android, iOS and others. Examples of usage can be find
 in 'test.c' file.  
 Enum sets supported operations:  
 <pre>
-enum CListMode
+typedef struct CList
 {
-  CList_Init,        /* List allocating - size may be manual or automated */
-  CList_ReAlloc,     /* List size reallocating - size manual or automated */
-  CList_Add,         /* Add object to the end of a list */
-  CList_Insert,      /* Insert object at position 'N' */
-  CList_Replace,     /* Replace object at position 'N' */
-  CList_Remove,      /* Remove object at position 'N' */
-  CList_Get,         /* Get object at position 'N' */
-  CList_FirstIndex,  /* Get first index of the object */
-  CList_LastIndex,   /* Get last index of the object */
-  CList_Clear        /* Clear list */
-}; 
+  void  (* add)        (struct CList *l, void *o);            /* Add object to the end of a list */
+  void  (* insert)     (struct CList *l, void *o, int n);     /* Insert object at position 'n' */
+  void  (* replace)    (struct CList *l, void *o, int n);     /* Replace object at position 'n' */
+  void  (* remove)     (struct CList *l, int n);              /* Remove object at position 'n' */
+  void* (* at)         (struct CList *l, int n);              /* Get object at position 'n' */
+  int   (* realloc)    (struct CList *l, int n);              /* Reallocate list to 'size' items */
+  int   (* firstIndex) (struct CList *l, void *o);            /* Get first index of the object */
+  int   (* lastIndex)  (struct CList *l, void *o);            /* Get last index of the object */
+  int   (* count)      (struct CList *l);                     /* Get list size */
+  void  (* clear)      (struct CList *l);                     /* Clear list */
+  void  (* free)       (struct CList *l);                     /* Destroy struct CList and all data */
+  void  (* print)      (struct CList *l, int n, const char *type);  /* Print list data */
+  void* priv;          /* NOT FOR USE, private data */
+} CList;
 </pre>
-If you are working with a huge number of elements and think that 
-your list holds a lot of memory you can use "CList_Realloc" and 
-specify a little bigger size than number of items in the list:
+If you are working with a huge number of elements and think that your list holds 
+a lot of memory or you do not plan add more items, you can use "realloc" and 
+specify a exact number of items in the list:
 <pre>
-int num = list->count + 10; /* Allocate more if plan add items */
-CList_exec(list, NULL, num, CList_Realloc);
+int num = list->count(list);
+list->realloc(list, num);
 </pre>
-You can check also BlockList version of CList it has more computations 
-and a little slow to compare to current list, but allocates and deallocates
-memory automatically by memory blocks, and CList there has "private" data.
+You can check also BlockList version of CList, it has more computations 
+and a little slow to compare to current list, but uses less memory at some points. 
+Block list allocates and deallocates memory automatically by memory blocks. It's a mix 
+of linked list and dynamic list.   
+Check also standart C linked list at folder LinkedList. It's classic C list with nodes.
+Run tests and check how fast is these lists.
+The fastest is currect "CList", then block list "BList", and linked list "List" is last.
 
 ## Build
 Clean and build:

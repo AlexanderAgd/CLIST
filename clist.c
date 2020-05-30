@@ -10,266 +10,258 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 #include "clist.h"
 
-/* 
-#define DEBUG
-*/
+typedef struct
+{  
+  int count;          /* Number of items in the list. */  
+  int alloc_size;     /* Allocated size in quantity of items */  
+  size_t item_size;   /* Size of each item in bytes. */  
+  void *items;        /* Pointer to the list */  
+} CList_priv_;  
 
-void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode)
+void  CList_Add_(CList *l, void *o);
+void  CList_Insert_(CList *l, void *o, int n);
+void  CList_Replace_(CList *l, void *o, int n);
+void  CList_Remove_(CList *l, int n);
+void* CList_At_(CList *l, int n);
+int   CList_Realloc_(CList *l, int n);
+int   CList_FirstIndex_(CList *l, void *o);
+int   CList_LastIndex_(CList *l, void *o);
+int   CList_Count_(CList *l);
+void  CList_Clear_(CList *l);
+void  CList_Free_(CList *l);
+void  CList_print_(CList *l, int n, char const *type);
+
+CList *CList_Init(size_t objSize)
 {
-  if (num != NULL && *num < 0)
+  CList *lst = malloc(sizeof(CList));
+  CList_priv_ *p = malloc(sizeof(CList_priv_));
+  if (!lst || !p)
   {
-    fprintf(stderr, "CList: ERROR! num = %i value canot be less than 0.\n", *num);
-    assert(*num >= 0);
+    fprintf(stderr, "CList: ERROR! Can not allocate CList!\n");
+    return NULL;
+  }
+  p->count = 0;
+  p->alloc_size = 0;
+  p->item_size = objSize;
+  p->items = NULL;
+  lst->add = &CList_Add_;
+  lst->insert = &CList_Insert_;
+  lst->replace = &CList_Replace_;
+  lst->remove = &CList_Remove_;
+  lst->at = &CList_At_;
+  lst->realloc = &CList_Realloc_; 
+  lst->firstIndex = &CList_FirstIndex_;
+  lst->lastIndex = &CList_LastIndex_;
+  lst->count = &CList_Count_;
+  lst->clear = &CList_Clear_;
+  lst->free = &CList_Free_;
+  lst->print = &CList_print_;
+  lst->priv = p;
+  return lst;
+}
+
+void CList_Add_(CList *l, void *o)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (p->count == p->alloc_size && CList_Realloc_(l, 0) == 0)
+    return;
+  
+  char *data = (char*) p->items;
+  data = data + p->count * p->item_size;
+  memcpy(data, o, p->item_size);
+  p->count++;
+}
+
+void CList_Insert_(CList *l, void *o, int n)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (n < 0 || n > p->count)
+  {
+    fprintf(stderr, "CList: ERROR! Insert position outside range - %d; n - %d.\n", 
+                        p->count, n);
+    assert(n >= 0 && n <= p->count);
+    return;
+  }
+
+  if (p->count == p->alloc_size && CList_Realloc_(l, 0) == 0)
+    return;
+
+  size_t step = p->item_size;
+  char *data = (char*) p->items + n * step;
+  memmove(data + step, data, (p->count - n) * step);
+  memcpy(data, o, step);
+  p->count++;
+}
+
+void CList_Replace_(CList *l, void *o, int n)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (n < 0 || n >= p->count)
+  {
+    fprintf(stderr, "CList: ERROR! Replace position outside range - %d; n - %d.\n", 
+                        p->count, n);
+    assert(n >= 0 && n < p->count);
+    return;
+  }
+
+  char *data = (char*) p->items;
+  data = data + n * p->item_size;
+  memcpy(data, o, p->item_size);
+}
+
+void CList_Remove_(CList *l, int n)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (n < 0 || n >= p->count)
+  {
+    fprintf(stderr, "CList: ERROR! Remove position outside range - %d; n - %d.\n",
+                        p->count, n);
+    assert(n >= 0 && n < p->count);
+    return;
+  }
+
+  size_t step = p->item_size;
+  char *data = (char*)p->items + n * step;
+  memmove(data, data + step, (p->count - n - 1) * step);
+  p->count--;
+
+  if (p->alloc_size > 3 * p->count && p->alloc_size >= 128) /* Dont hold much memory */
+    CList_Realloc_(l, p->alloc_size / 2);
+}
+
+void *CList_At_(CList *l, int n)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (n < 0 || n >= p->count)
+  {
+    fprintf(stderr, "CList: ERROR! Get position outside range - %d; n - %d.\n", 
+                      p->count, n);
+    assert(n >= 0 && n < p->count);
     return NULL;
   }
 
-  switch (mode)
+  char *data = (char*) p->items;
+  data = data + n * p->item_size;
+  return data;
+}
+
+int CList_Realloc_(CList *l, int n)
+{
+  if (n < 0)
   {
-    case CList_Init:
-    {
-      if (list->item_size == 0)
-      {
-        fprintf(stderr, "CList: ERROR! item_size can not be \'0\'!\n");
-        assert(list->item_size);
-        break;
-      }  
+    fprintf(stderr, "CList: ERROR! Can not realloc to '%i' size\n", n);
+    assert(n >= 0);
+  }  
+  size_t size = 0;
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  if (n == 0)
+  {
+    if (p->alloc_size == 0)
+      size = 64;
+    else if (p->alloc_size > 63)
+      size = p->alloc_size * 2;
+  }
+  else
+    size = n;
 
-      size_t size;
-      if (num == NULL || *num == 0)
-        size = 128;
-      else
-        size = *num;
-
-      list->items = malloc(list->item_size * size);
-      list->alloc_size = size;
-      list->count = 0;
-      break;
-    }
-
-    case CList_ReAlloc:
-    {
-      size_t size = 0;
-      if (num != NULL) size = *num;
-
-      if (size == 0)
-      {
-        size_t length = list->alloc_size;
-
-        if (length < 32) size = 128;
-        else if (length < 129) size = 512;
-        else if (length < 513) size = 2048;
-        else if (length < 2049) size = 8192;
-        else if (length < 8193) size = 16384;
-        else if (length < 16385) size = 32768;
-        else if (length < 32769) size = 65536;
-        else if (length < 65537) size = 131072;
-        else if (length < 131073) size = 262144;
-        else if (length < 262145) size = 524288;
-        else if (length < 524289) size = 1048576;
-        else
-        {
-          fprintf(stderr, "CList: You need a lot of memory!\nEdit this code yourself ...\n");
-          assert(size < 1048576);
-          break;
-        }
-      }
-
-      void *ptr = realloc(list->items, list->item_size * size);
-
-      if (ptr == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! can not reallocate memory!\n");
-        assert(ptr != NULL);
-      }
-
-      #ifdef DEBUG
-      fprintf(stdout, "CList: Reallocated %d bytes or %d items.\n", 
-               list->item_size * size, size);
-      #endif
-
-      list->items = ptr;
-      list->alloc_size = size;
-      break;
-    }
-
-    case CList_Add:
-    {
-      if (list->count == list->alloc_size)
-        CList_exec(list, NULL, NULL, CList_ReAlloc);
-    
-      char *data = (char*) list->items;
-      data = data + list->count * list->item_size;
-      memcpy(data, obj, list->item_size);
-      list->count++;
-      break;
-    }
-
-    case CList_Insert:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }
-
-      size_t pos = *num;
-      if (pos > list->count)
-      {
-        fprintf(stderr, "CList: ERROR! Insert position outside range - %d; pos - %d.\n", 
-                          list->count, pos);
-        assert(pos <= list->count);
-        break;
-      }
-
-      if (list->count == list->alloc_size)
-        CList_exec(list, NULL, NULL, CList_ReAlloc);
-
-      size_t step = list->item_size;
-      char *data = (char*)list->items + pos * step;
-      memmove(data + step, data, (list->count - pos) * step);
-      memcpy(data, obj, step);
-
-      list->count++;
-      break;
-    }
-
-    case CList_Replace:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }
-
-      size_t pos = *num;
-      if (pos >= list->count)
-      {
-        fprintf(stderr, "CList: ERROR! Replace position outside range - %d; pos - %d.\n", 
-                          list->count, pos);
-        assert(pos < list->count);
-        break;
-      }
-
-      char *data = (char*) list->items;
-      data = data + pos * list->item_size;
-      memcpy(data, obj, list->item_size);
-      break;
-    }
-
-    case CList_Get:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }
-
-      size_t pos = *num;
-      if (pos >= list->count)
-      {
-        fprintf(stderr, "CList: ERROR! Get position outside range - %d; pos - %d.\n", 
-                          list->count, pos);
-        assert(pos < list->count);
-        break;
-      }
-
-      char *data = (char*) list->items;
-      data = data + pos * list->item_size;
-      return data;
-    }
-
-    case CList_FirstIndex:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }      
-      char *data = (char*) list->items;
-      size_t step = list->item_size;
-      size_t i = 0;
-      *num = -1;
-      for (; i < list->count * step; i += step)
-      {
-        if (strncmp(data + i, obj, step) == 0)
-        {
-          *num = i / step;
-          break;
-        }
-      }
-      break;
-    }
-
-    case CList_LastIndex:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }      
-      char *data = (char*) list->items;
-      size_t step = list->item_size;
-      long int i = list->count * step - step;
-      *num = -1;
-      for (; i >= 0 ; i -= step)
-      {
-        if (strncmp(data + i, obj, step) == 0)
-        {
-          *num = i / step;
-          break;
-        }
-      }
-      break;
-    }
-  
-    case CList_Remove:
-    {
-      if (num == NULL)
-      {
-        fprintf(stderr, "CList: ERROR! Index \'num\' is NULL.\n");
-        assert(num != NULL);
-        break;
-      }
-
-      size_t pos = *num;
-      if (pos >= list->count)
-      {
-        fprintf(stderr, "CList: ERROR! Remove position outside range - %d; pos - %d.\n",
-                          list->count - 1, pos);
-        assert(pos < list->count);
-        break;
-      }
-
-      size_t step = list->item_size;
-      char *data = (char*)list->items + pos * step;
-      memmove(data, data + step, (list->count - pos - 1) * step);
-      list->count--;
-      break;
-    }
-
-    case CList_Clear:
-    {
-      free(list->items);
-      list->items = NULL;
-      list->alloc_size = 0;
-      list->count = 0;
-      break;
-    }
-
-    default:
-    {
-      fprintf(stderr, "CList: ERROR! Wrong enum \'CListMode\' value used.\n");
-      assert(mode >= CList_Init && mode <= CList_Clear);
-      break;
-    }
+  if (size < (size_t) p->count)
+  {
+    fprintf(stderr, "CList: ERROR! Can not realloc to '%i' size - count is '%i'\n", n, p->count);
+    assert(size >= (size_t) p->count);
   }
 
-  return NULL;
+  void *ptr = realloc(p->items, p->item_size * size);
+  if (ptr == NULL)
+  {
+    fprintf(stderr, "CList: ERROR! can not reallocate memory!\n");
+    return 0;
+  }
+  p->items = ptr;
+  p->alloc_size = size;
+  return 1;
+}
+
+int CList_FirstIndex_(CList *l, void *o)
+{ 
+  CList_priv_ *p = (CList_priv_*) l->priv;    
+  char *data = (char*) p->items;
+  size_t step = p->item_size;
+  size_t i = 0;
+  int index = 0;
+  for (; i < p->count * step; i += step, index++)
+  {
+    if (strncmp(data + i, o, step) == 0)
+      return index;
+  }
+  return -1; 
+}
+
+int CList_LastIndex_(CList *l, void *o)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  char *data = (char*) p->items;
+  size_t step = p->item_size;
+  int i = p->count * step - step;
+  int index = p->count - 1;
+  for (; i >= 0 ; i -= step, index--)
+  {
+    if (strncmp(data + i, o, step) == 0)
+      return index;
+  }
+  return -1;
+}
+
+int CList_Count_(CList *l)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  return p->count;
+}
+
+void CList_Clear_(CList *l)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  free(p->items);
+  p->items = NULL;
+  p->alloc_size = 0;
+  p->count = 0;
+}
+
+void CList_Free_(CList *l)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  free(p->items);
+  free(p);
+  free(l);
+}
+
+void CList_print_(CList *l, int n, char const *type)
+{
+  CList_priv_ *p = (CList_priv_*) l->priv;
+  printf("\nCList:  count = %i  item_size = %zu   "
+       "alloc_size = %i \n", p->count, p->item_size, p->alloc_size);
+
+  if (n > 0)
+  {
+    n = (n > p->count) ? p->count : n;
+    char *data = NULL;
+    int i = 0;
+    for (; i < n; i++)
+    {
+      data = (char*) p->items + i * p->item_size;
+      if (type == NULL) printf("%p  ", data);  /* Print out pointers */
+      else if (strcmp(type, "char") == 0) printf("%c ", *(char*) data);
+      else if (strcmp(type, "short") == 0) printf("%hi  ", *(short*) data);
+      else if (strcmp(type, "int") == 0) printf("%i  ", *(int*) data);
+      else if (strcmp(type, "long") == 0) printf("%li  ", *(long*) data);
+      else if (strcmp(type, "uintptr_t") == 0) printf("%zx  ", (uintptr_t*) data);
+      else if (strcmp(type, "size_t") == 0) printf("%zu  ", *(size_t*) data);
+      else if (strcmp(type, "double") == 0) printf("%f  ", *(double*) data);
+      else if (strcmp(type, "string") == 0) printf("%s\n", data);
+      else { printf("Unknown type."); break; }
+    }
+    printf("\n\n");
+  }
 }

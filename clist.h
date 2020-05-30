@@ -13,29 +13,24 @@
 extern "C" {
 #endif
 
-enum CListMode
-{
-  CList_Init,        /* List allocating - size may be manual or automated */
-  CList_ReAlloc,     /* List size reallocating - size manual or automated */
-  CList_Add,         /* Add object to the end of a list */
-  CList_Insert,      /* Insert object at position 'N' */
-  CList_Replace,     /* Replace object at position 'N' */
-  CList_Remove,      /* Remove object at position 'N' */
-  CList_Get,         /* Get object at position 'N' */
-  CList_FirstIndex,  /* Get first index of the object */
-  CList_LastIndex,   /* Get last index of the object */
-  CList_Clear        /* Clear list */
-};
-
 typedef struct CList
 {
-  size_t count;      /* Number of items in the list. */
-  size_t alloc_size; /* Allocated size in quantity of items - not bytes! */
-  size_t item_size;  /* Size of each item in bytes. */
-  void *items;       /* Pointer to the array list */
+  void  (* add)        (struct CList *l, void *o);            /* Add object to the end of a list */
+  void  (* insert)     (struct CList *l, void *o, int n);     /* Insert object at position 'n' */
+  void  (* replace)    (struct CList *l, void *o, int n);     /* Replace object at position 'n' */
+  void  (* remove)     (struct CList *l, int n);              /* Remove object at position 'n' */
+  void* (* at)         (struct CList *l, int n);              /* Get object at position 'n' */
+  int   (* realloc)    (struct CList *l, int n);              /* Reallocate list to 'size' items */
+  int   (* firstIndex) (struct CList *l, void *o);            /* Get first index of the object */
+  int   (* lastIndex)  (struct CList *l, void *o);            /* Get last index of the object */
+  int   (* count)      (struct CList *l);                     /* Get list size */
+  void  (* clear)      (struct CList *l);                     /* Clear list */
+  void  (* free)       (struct CList *l);                     /* Destroy struct CList and all data */
+  void  (* print)      (struct CList *l, int n, const char *type);  /* Print list data */
+  void *priv;          /* NOT FOR USE, private data */
 } CList;
 
-void *CList_exec(CList *list, void *obj, int *num, enum CListMode mode);
+CList *CList_Init(size_t objSize); /* Set list object size in bytes */
 
 #ifdef __cplusplus
 }

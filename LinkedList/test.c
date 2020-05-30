@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "clist.h"
+#include "list.h"
 
 #if defined(WIN32)
 int gettimeofday(struct timeval *tp, void *tzp);
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   /******************************************************* CHAR LIST */
 
   n = sizeof(char); 
-  CList *lst = CList_Init(n);
+  List *lst = List_Init(n);
 
   for (i = 33; i < 123; i++)
   { 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   /******************************************************* SHORT INT LIST */
  
   n = sizeof(short); 
-  lst = CList_Init(n); /* Always set object size you will work with */
+  lst = List_Init(n);
 
   short sh = 1001;
   for (i = 0; i < 24; i++, sh += 1000)
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
   lst->insert(lst, &sh, 20);   /* Insert value of 'sh' to position 20 */
 
   lst->insert(lst, &sh, 25);   /* Insert value of 'sh' to position 25 */ 
-  lst->print(lst, lst->count(lst) - 1, "short");
+  lst->print(lst, lst->count(lst), "short");
 
   n = lst->lastIndex(lst, &sh); /* Find last index of '5001' short */  
   printf("Last index of \'%i\' is %i\n", sh, n);
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
   } sample;
 
   n = sizeof(sample);
-  lst = CList_Init(n);
+  lst = List_Init(n);
 
   printf("Size of struct 'sample' = %i bytes\n", sizeof(sample));
 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     };
 
     obj = &sam;
-    lst->insert(lst, obj, n); /* Insert each object at index '0' */
+    lst->insert(lst, obj, n); /* Insert each object at index '0' of array */
   }
 
   lst->print(lst, 20, NULL);
@@ -155,6 +155,7 @@ int main(int argc, char **argv)
     for (i = 0; i < count; i++)
     {
       struct sample *sam = lst->at(lst, i);
+
       switch (j)
       {
         case 0: printf("%15li ", sam->l); break;
@@ -179,7 +180,7 @@ int main(int argc, char **argv)
   printf("\nSize of 'uintptr_t' = %i bytes\n", sizeof(uintptr_t));
 
   n = sizeof(uintptr_t);
-  lst = CList_Init(n);
+  lst = List_Init(n);
 
   struct sample sm1 = { 64, 6.4, 4, &n, 16, obj };
   struct sample sm2 = { 128, 12.8, 8, &j, { 1024 }, (void*)&sh }; /* Just some sample data */
@@ -231,7 +232,7 @@ int main(int argc, char **argv)
   /******************************************************* PERFOMANCE TEST */
 
   n = sizeof(int);
-  lst = CList_Init(n);
+  lst = List_Init(n);
 
   size_t time;
   int pos = 0;
@@ -241,7 +242,7 @@ int main(int argc, char **argv)
   struct timeval end;
 
   printf("PERFOMANCE TEST - 1 second contains 1000000 microseconds\n\n");
-
+  
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
     lst->add(lst, &i);

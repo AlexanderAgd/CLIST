@@ -20,17 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "clist.h"
-
-enum DataType
-{                    /* bytes below true for x64 bit system */
-  type_char,         /* 1 byte */
-  type_short,        /* 2 byte */
-  type_int,          /* 4 byte */
-  type_void_ptr,     /* 8 byte */
-};
-
-void CListInfo(CList list, enum DataType byte);
+#include "blist.h"
 
 #if defined(WIN32)
 int gettimeofday(struct timeval *tp, void *tzp);
@@ -47,85 +37,78 @@ int main(int argc, char **argv)
   int i = 0;
   int n = 0;
 
-  /******************************************************* CHAR ARRAY */
+  /******************************************************* CHAR LIST */
 
   n = sizeof(char); 
-  CList lst = CList_exec(NULL, NULL, &n, CList_Init);
+  BList *lst = BList_Init(n, 32);
 
   for (i = 33; i < 123; i++)
   { 
     obj = &i;  
-    CList_exec(lst, obj, NULL, CList_Add); /* Adding obj items to the end of array */
+    lst->add(lst, obj); /* Adding obj items to the end of array */
   }
-  CListInfo(lst, type_char);
+  lst->print(lst, 150, "char");
 
   n = 32;
   char ch = 'A';
-  obj = CList_exec(lst, NULL, &n, CList_Get); /* Get 32nd item of array */
+  obj = lst->at(lst, n); /* Get 32nd item of array */
   printf("Position %i contains symbol \'%c\'\n", n, *((char*)obj));
 
   ch = '!';
   obj = &ch;
-  CList_exec(lst, obj, &n, CList_FirstIndex);  /* Find first index of '!' char */
+  n = lst->firstIndex(lst, obj);  /* Find first index of '!' char */
   printf("Index of \'%c\' is %i\n", ch, n);
 
   ch = '+';
-  CList_exec(lst, obj, &n, CList_FirstIndex);
-  printf("Index of \'%c\' is %i\n\n", ch, n);
+  n = lst->firstIndex(lst, obj);
+  printf("Index of \'%c\' is %i\n", ch, n);
 
   n = 0;
   for (i = 15; i > 0; i--)
-    CList_exec(lst, obj, &n, CList_Remove); /* Remove item at index 0 from array 15 times */
+    lst->remove(lst, 0); /* Remove item at index 0 from array 15 times */
 
-  CListInfo(lst, type_char);
-  CList_print(lst);
+  lst->print(lst, 150, "char");
+  lst->free(lst);
 
-  CList_exec(lst, NULL, NULL, CList_Clear);
-  free(lst);
-
-  /******************************************************* SHORT INT ARRAY */
+  /******************************************************* SHORT INT LIST */
  
   n = sizeof(short); 
-  lst = CList_exec(NULL, NULL, &n, CList_Init);
+  lst = BList_Init(n, 0); /* When block size set 0 default size 64 used instead */
 
   short sh = 1001;
   for (i = 0; i < 24; i++, sh += 1000)
   {
     obj = &sh;
-    CList_exec(lst, obj, NULL, CList_Add);
+    lst->add(lst, obj);
   }
 
-  CListInfo(lst, type_short);
+  lst->print(lst, 100, "short");
 
   sh = 5001;
-  n = 20;
-  CList_exec(lst, obj, &n, CList_Insert);   /* Insert value of 'sh' to position 20 */
+  lst->insert(lst, &sh, 20);   /* Insert value of 'sh' to position 20 */
 
-  n = 25;
-  CList_exec(lst, obj, &n, CList_Insert);   /* Insert value of 'sh' to position 25 */ 
-  CListInfo(lst, type_short);
+  lst->insert(lst, &sh, 25);   /* Insert value of 'sh' to position 25 */ 
+  lst->print(lst, lst->count(lst) - 1, "short");
 
-  n = 0;
-  CList_exec(lst, obj, &n, CList_LastIndex); /* Find last index of '5001' short */
-  printf("Last index of \'%i\' is %i\n\n", sh, n);
+  n = lst->lastIndex(lst, &sh); /* Find last index of '5001' short */  
+  printf("Last index of \'%i\' is %i\n", sh, n);
 
   while (n != -1)
   {
-    CList_exec(lst, obj, &n, CList_FirstIndex); /* Find first index of '5001' short */
+    n = lst->firstIndex(lst, &sh); /* Find first index of '5001' short */
 
-    if (n != -1)
-      CList_exec(lst, NULL, &n, CList_Remove); /* Remove it from the list */
+    if (n != -1)                   /* Remove it from the list */
+      lst->remove(lst, n);
   }
 
-  n = 0;
   sh = 1111;
-  CList_exec(lst, &sh, &n, CList_Replace); /* Replace object at position '0' */
-  CListInfo(lst, type_short);
+  lst->replace(lst, &sh, 0); /* Replace object at position '0' */
+  lst->print(lst, 100, "short");
 
-  CList_exec(lst, NULL, NULL, CList_Clear); /* CLear list */
-  free(lst);
+  lst->clear(lst); /* CLear list */
+  lst->free(lst);
   
-  /******************************************************* STRUCT ARRAY */
+  /******************************************************* STRUCT LIST */
 
   struct sample
   {
@@ -142,9 +125,9 @@ int main(int argc, char **argv)
   } sample;
 
   n = sizeof(sample);
-  lst = CList_exec(NULL, NULL, &n, CList_Init);
+  lst = BList_Init(n, 8);
 
-  printf("Size of struct 'sample' = %i bytes\n\n", sizeof(sample));
+  printf("Size of struct 'sample' = %i bytes\n", sizeof(sample));
 
   n = 0;
   for (i = 0; i < 8; i++) /* Let create list of a struct */
@@ -160,19 +143,18 @@ int main(int argc, char **argv)
     };
 
     obj = &sam;
-    CList_exec(lst, obj, &n, CList_Insert); /* Insert each object at index '0' of array */
+    lst->insert(lst, obj, n); /* Insert each object at index '0' of array */
   }
 
-  CListInfo(lst, type_void_ptr);
+  lst->print(lst, 20, NULL);
 
   int j;
-  int count = 0;
-  CList_exec(lst, NULL, &count, CList_Count);
+  int count = lst->count(lst);
   for (j = 0; j < 6; j++, i = 0)  /* Print out struct content */
   {  
     for (i = 0; i < count; i++)
     {
-      struct sample *sam = CList_exec(lst, NULL, &i, CList_Get);
+      struct sample *sam = lst->at(lst, i);
 
       switch (j)
       {
@@ -188,27 +170,26 @@ int main(int argc, char **argv)
     printf("\n");
   }
 
-  CList_exec(lst, NULL, NULL, CList_Clear);
-  free(lst);
+  lst->free(lst);
 
-  /******************************************************* POINTER ARRAY */
+  /******************************************************* POINTER LIST */
 
   /* If we want create list of objects located in diffent places of memory, */
   /* let create pointers list or in our case "uintptr_t" address list       */
 
-  printf("\nSize of 'uintptr_t' = %i bytes\n\n", sizeof(uintptr_t));
+  printf("\nSize of 'uintptr_t' = %i bytes\n", sizeof(uintptr_t));
 
   n = sizeof(uintptr_t);
-  lst = CList_exec(NULL, NULL, &n, CList_Init);
+  lst = BList_Init(n, 64);
 
   struct sample sm1 = { 64, 6.4, 4, &n, 16, obj };
   struct sample sm2 = { 128, 12.8, 8, &j, { 1024 }, (void*)&sh }; /* Just some sample data */
 
   uintptr_t addr = (uintptr_t) &sm1;    /* Cast reference to address value */
-  CList_exec(lst, &addr, NULL, CList_Add);
+  lst->add(lst, &addr);
 
   addr = (uintptr_t) &sm2;
-  CList_exec(lst, &addr, NULL, CList_Add);
+  lst->add(lst, &addr);
 
   struct sample *sm3 = malloc(sizeof(sample));
   sm3->l = 256;
@@ -219,16 +200,16 @@ int main(int argc, char **argv)
   sm3->dat = (void*) &sm2;
 
   addr = (uintptr_t) sm3;
-  CList_exec(lst, &addr, NULL, CList_Add);
+  lst->add(lst, &addr);
 
-  CListInfo(lst, type_void_ptr);
+  lst->print(lst, 20, "uintptr_t");
 
-  CList_exec(lst, NULL, &count, CList_Count);
+  count = lst->count(lst);
   for (j = 0; j < 6; j++, i = 0) /* Print out struct content */
   {  
     for (i = 0; i < count; i++)
     {
-      uintptr_t *ad = CList_exec(lst, NULL, &i, CList_Get);
+      uintptr_t *ad = lst->at(lst, i);
       struct sample *sam = (struct sample*) *ad; /* Cast address value to struct pointer */
       switch (j)
       {
@@ -246,13 +227,12 @@ int main(int argc, char **argv)
 
   printf("\n");
   free(sm3);
-  CList_exec(lst, NULL, NULL, CList_Clear);
-  free(lst);
+  lst->free(lst);
 
   /******************************************************* PERFOMANCE TEST */
 
   n = sizeof(int);
-  lst = CList_exec(NULL, NULL, &n, CList_Init);
+  lst = BList_Init(n, 0);
 
   size_t time;
   int pos = 0;
@@ -265,98 +245,52 @@ int main(int argc, char **argv)
   
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
-    CList_exec(lst, &i, NULL, CList_Add);
+    lst->add(lst, &i);
   gettimeofday(&end, NULL);
   time = diff_usec(start, end);
-  printf("Add of %i int to array takes  -  %lu microseconds\n", n, time);
+  printf("Add of %i int takes  -  %zu microseconds\n", n, time);
 
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
-    CList_exec(lst, NULL, &pos, CList_Remove);
+    lst->remove(lst, 0);
   gettimeofday(&end, NULL);
   time = diff_usec(start, end);
-  printf("Remove from position '0' of %i int of array takes  -  %lu microseconds\n", n, time);
+  printf("Remove from position '0' of %i int takes  -  %zu microseconds\n", n, time);
 
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
-    CList_exec(lst, &i, &pos, CList_Insert);
+    lst->insert(lst, &i, 0);
   gettimeofday(&end, NULL);
   time = diff_usec(start, end);
-  printf("Insert to position '0' of %i int to array takes  -  %lu microseconds\n", n, time);
+  printf("Insert to position '0' of %i int takes  -  %zu microseconds\n", n, time);
 
   gettimeofday(&start, NULL);
   for(i=0; i < n; i++)
-    CList_exec(lst, &n, &i, CList_Replace);
+    lst->remove(lst, lst->count(lst) - 1);
   gettimeofday(&end, NULL);
   time = diff_usec(start, end);
-  printf("Replace of %i int in array takes  -  %lu microseconds\n", n, time);
+  printf("Remove from last position of %i int takes  -  %zu microseconds\n", n, time);
+
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    lst->insert(lst, &i, lst->count(lst));
+  gettimeofday(&end, NULL);
+  time = diff_usec(start, end);
+  printf("Insert to last position of %i int takes  -  %zu microseconds\n", n, time);
+
+  gettimeofday(&start, NULL);
+  for(i=0; i < n; i++)
+    lst->replace(lst, &n, i);
+  gettimeofday(&end, NULL);
+  time = diff_usec(start, end);
+  printf("Replace of %i int takes  -  %zu microseconds\n", n, time);
 
   printf("\n");
-  CList_exec(lst, NULL, NULL, CList_Clear);
-  free(lst);
+  lst->free(lst);
+
   return 0;
 
 } /**** MAIN ****/
-
-void CListInfo(CList list, enum DataType byte)
-{
-  int count = 1000;
-  CList_exec(list, NULL, &count, CList_Count);
-
-  CList_print(list);
-
-  int i = 0;
-  switch(byte)
-  {
-    case type_char:
-    {
-      char *data;
-      for (; i < count; i++)
-      {
-        data = CList_exec(list, NULL, &i, CList_Get); 
-        printf("%c ", *data);
-      }  
-      break;
-    }
-    case type_short:
-    {
-      short *data;
-      for (; i < count; i++)
-      {
-        data = CList_exec(list, NULL, &i, CList_Get);   
-        printf("%hi ", *data);
-      }  
-      break;
-    }
-    case type_int:
-    {
-      int *data;
-      for (; i < count; i++)
-      {
-        data = CList_exec(list, NULL, &i, CList_Get);  
-        printf("%i ", *data);
-      }  
-      break;
-    }
-    case type_void_ptr:
-    {
-      uintptr_t *data;
-      for (; i < count; i++)
-      {
-        data = CList_exec(list, NULL, &i, CList_Get); 
-        printf("%p  ", data);
-      }  
-      break;
-    } 
-    default:
-    {
-      printf("CList: CListInfo - wrong DataType value!\n");
-      break;
-    }
-  }
-
-  printf("\n\n");                    
-}
 
 #if defined(WIN32)
 int gettimeofday(struct timeval *tp, void *tzp)

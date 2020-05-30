@@ -7,17 +7,17 @@
 #/*                                        */
 #/******************************************/
 
-src = blist.c test.c
+src = list.c test.c
 
-headers = blist.h
+headers = list.h
 
-libObjects = blist.o
+libObjects = list.o
 
 objects = $(libObjects) test.o
 
 CC = gcc -g -W -O2 $(Cflags)
 
-LIB = libblist.a
+LIB = liblist.a
 
 TARGET = test
 
