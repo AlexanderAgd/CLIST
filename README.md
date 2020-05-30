@@ -9,34 +9,30 @@ One struct and one init function - very easy and comfort usage, example:
     void *ptr;
   } unit;
 
-  CList *list = CList_Init(sizeof(unit)); /* Initialization */
+  CList *list = CList_Init(sizeof(unit));     /* Initialization */
  
   long int i; 
   for (i = 0; i < 10; i++)
   {
     struct unit U = { i, &i };
-    list->add(list, &U);        /* Adding data at the end */
-    list->insert(list, &U, 0);  /* Insert at position 0 */    
+    list->add(list, &U);            /* Adding data at the end */
+    list->insert(list, &U, 0);      /* Insert at position 0 */    
   }
-                                /* Get item at position '1' */
+                                    /* Get item at position '1' */
   struct unit *tmp = (struct unit*) list->at(list, 1);  
   printf("Unit size is %li, pointer is %p \n", tmp->size, tmp->ptr);
 
-  i = list->count(list);        /* Get number of items in the list */
-  list->print(list, i, "long"); /* Print out 'i' elements of list, first element of struct is shown */
+  i = list->count(list);            /* Get number of items in the list */
+  list->print(list, i, "long");     /* Print out 'i' elements of list, first element of struct is shown */
 
-  list->free(list);             /* Destroy all data and list */ 
+  list->free(list);                 /* Destroy all data and list */ 
 </pre>  
-CList struct contains pointers to list functions   
-<pre>
 
-</pre>
 Code may be used as static library or just included in your own code as object.
 Automated reallocation of memory block only at some points when adding, inserting or removing elements.
 May be used on any OS that supports C standart library:
-Windows, Linux, Mac OS, any Unix, Android, iOS and others. Examples of usage can be find
-in 'test.c' file.  
-Enum sets supported operations:  
+Windows, Linux, Mac OS, any Unix, Android, iOS and others.  
+Here CList struct with implemented functions:  
 <pre>
 typedef struct CList
 {
@@ -45,7 +41,7 @@ typedef struct CList
   void  (* replace)    (struct CList *l, void *o, int n);     /* Replace object at position 'n' */
   void  (* remove)     (struct CList *l, int n);              /* Remove object at position 'n' */
   void* (* at)         (struct CList *l, int n);              /* Get object at position 'n' */
-  int   (* realloc)    (struct CList *l, int n);              /* Reallocate list to 'size' items */
+  int   (* realloc)    (struct CList *l, int n);              /* Reallocate list to 'n' items */
   int   (* firstIndex) (struct CList *l, void *o);            /* Get first index of the object */
   int   (* lastIndex)  (struct CList *l, void *o);            /* Get last index of the object */
   int   (* count)      (struct CList *l);                     /* Get list size */
