@@ -53,7 +53,7 @@ typedef struct CList
 </pre>
 If you are working with a huge number of elements and think that your list holds 
 a lot of memory or you do not plan add more items, you can use "realloc" and 
-specify a exact number of items in the list:
+specify an exact number of items in the list:
 <pre>
 int num = list->count(list);
 list->realloc(list, num);
@@ -62,7 +62,7 @@ You can check also BlockList version of CList, it has more computations
 and a little slow to compare to current list, but uses less memory at some points. 
 Block list allocates and deallocates memory automatically by memory blocks. It's a mix 
 of linked list and dynamic list.   
-Check also standart C linked list at folder LinkedList. It's classic C list with nodes.
+Check also standard C linked list at folder LinkedList. It's classic C list with nodes.
 Run tests and check how fast is these lists.
 The fastest is currect "CList", then block list "BList", and linked list "List" is last.
 
@@ -78,11 +78,12 @@ Run test executable for list examples and perfomance.
 <pre> 
 CPU: Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
 
-Initialization of 10000 int array takes  -  3 microseconds.
-Add of 10000 int to array takes  -  122 microseconds.
-Remove from position '0' of 10000 int of array takes  -  3234 microseconds.
-Insert to position '0' of 10000 int to array takes  -  3514 microseconds.
-Replace of 10000 int in array takes  -  49 microseconds.
+Add of 10000 int takes  -  51 microseconds
+Remove from position '0' of 10000 int takes  -  3072 microseconds
+Insert to position '0' of 10000 int takes  -  3017 microseconds
+Remove from last position of 10000 int takes  -  88 microseconds
+Insert to last position of 10000 int takes  -  105 microseconds
+Replace of 10000 int takes  -  49 microseconds
 </pre>
 
 ## License
