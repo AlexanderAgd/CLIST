@@ -2,7 +2,7 @@
 C List, universal list solution for C language. Pure C but compatible to compile with C++.    
 Supports all kind of data in a list: char, short, int, long, pointers, structs.
 One struct and one init function - very easy and comfort usage, example:
-<pre>
+```C
   struct unit
   {
     long int size;
@@ -26,14 +26,14 @@ One struct and one init function - very easy and comfort usage, example:
   list->print(list, i, "long");     /* Print out 'i' elements of list, first element of struct is shown */
 
   list->free(list);                 /* Destroy all data and list */ 
-</pre>  
+``` 
 
 Code may be used as static library or just included in your own code as object.
 Automated reallocation of memory block only at some points when adding, inserting or removing elements.
 May be used on any OS that supports C standart library:
 Windows, Linux, Mac OS, any Unix, Android, iOS and others.  
 Here CList struct with implemented functions:  
-<pre>
+```C
 typedef struct CList
 {
   void  (* add)        (struct CList *l, void *o);            /* Add object to the end of a list */
@@ -50,14 +50,14 @@ typedef struct CList
   void  (* print)      (struct CList *l, int n, const char *type);  /* Print list data */
   void* priv;          /* NOT FOR USE, private data */
 } CList;
-</pre>
+```
 If you are working with a huge number of elements and think that your list holds 
 a lot of memory or you do not plan add more items, you can use "realloc" and 
 specify an exact number of items in the list:
-<pre>
+```C
 int num = list->count(list);
 list->realloc(list, num);
-</pre>
+```
 You can check also BlockList version of CList, it has more computations 
 and a little slow to compare to current list, but uses less memory at some points. 
 Block list allocates and deallocates memory automatically by memory blocks. It's a mix 
