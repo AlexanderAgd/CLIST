@@ -32,7 +32,7 @@ int   CList_LastIndex_(CList *l, void *o);
 int   CList_Count_(CList *l);
 void  CList_Clear_(CList *l);
 void  CList_Free_(CList *l);
-void  CList_print_(CList *l, int n, char const *type);
+void  CList_print_(CList *l, int n, const char *type);
 
 CList *CList_Init(size_t objSize)
 {
@@ -227,7 +227,7 @@ void CList_Free_(CList *l)
   free(l);
 }
 
-void CList_print_(CList *l, int n, char const *type)
+void CList_print_(CList *l, int n, const char *type)
 {
   CList_priv_ *p = (CList_priv_*) l->priv;
   printf("\nCList:  count = %i  item_size = %zu   "
