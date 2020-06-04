@@ -66,7 +66,8 @@ CList *CList_Init(size_t objSize)
 void CList_Add_(CList *l, void *o)
 {
   CList_priv_ *p = (CList_priv_*) l->priv;
-  if (p->count == p->alloc_size && CList_Realloc_(l, 0) == 0)
+  if (p->count == p->alloc_size && 
+        CList_Realloc_(l, p->alloc_size * 2) == 0)
     return;
   
   char *data = (char*) p->items;
@@ -86,7 +87,8 @@ void CList_Insert_(CList *l, void *o, int n)
     return;
   }
 
-  if (p->count == p->alloc_size && CList_Realloc_(l, 0) == 0)
+  if (p->count == p->alloc_size && 
+        CList_Realloc_(l, p->alloc_size * 2) == 0)
     return;
 
   size_t step = p->item_size;
@@ -128,7 +130,7 @@ void CList_Remove_(CList *l, int n)
   memmove(data, data + step, (p->count - n - 1) * step);
   p->count--;
 
-  if (p->alloc_size > 3 * p->count && p->alloc_size >= 128) /* Dont hold much memory */
+  if (p->alloc_size > 3 * p->count && p->alloc_size >= 4) /* Dont hold much memory */
     CList_Realloc_(l, p->alloc_size / 2);
 }
 
@@ -150,37 +152,25 @@ void *CList_At_(CList *l, int n)
 
 int CList_Realloc_(CList *l, int n)
 {
-  if (n < 0)
-  {
-    fprintf(stderr, "CList: ERROR! Can not realloc to '%i' size\n", n);
-    assert(n >= 0);
-  }  
-  size_t size = 0;
   CList_priv_ *p = (CList_priv_*) l->priv;
-  if (n == 0)
-  {
-    if (p->alloc_size == 0)
-      size = 64;
-    else if (p->alloc_size > 63)
-      size = p->alloc_size * 2;
-  }
-  else
-    size = n;
-
-  if (size < (size_t) p->count)
+  if (n < p->count)
   {
     fprintf(stderr, "CList: ERROR! Can not realloc to '%i' size - count is '%i'\n", n, p->count);
-    assert(size >= (size_t) p->count);
+    assert(n >= p->count);
+    return 0;
   }
 
-  void *ptr = realloc(p->items, p->item_size * size);
+  if (n == 0 && p->alloc_size == 0)
+    n = 2;
+
+  void *ptr = realloc(p->items, p->item_size * n);
   if (ptr == NULL)
   {
-    fprintf(stderr, "CList: ERROR! can not reallocate memory!\n");
+    fprintf(stderr, "CList: ERROR! Can not reallocate memory!\n");
     return 0;
   }
   p->items = ptr;
-  p->alloc_size = size;
+  p->alloc_size = n;
   return 1;
 }
 
