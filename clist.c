@@ -225,6 +225,7 @@ void CList_Free_(CList *l)
   free(p->items);
   free(p);
   free(l);
+  l = NULL;
 }
 
 void CList_print_(CList *l, int n, const char *type)
