@@ -280,6 +280,7 @@ void List_Free_(List *l)
   List_priv_ *p = (List_priv_*) l->priv;
   free(p);
   free(l);
+  l = NULL;
 }
 
 void List_print_(List *l, int n, char const *type)

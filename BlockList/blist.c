@@ -355,6 +355,7 @@ void  BList_Free_(BList *l)
   BList_priv_ *p = (BList_priv_*) l->priv;
   free(p);
   free(l);
+  l = NULL;
 }
 
 void BList_print_(BList *l, int n, const char *type)
