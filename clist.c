@@ -183,7 +183,7 @@ int CList_FirstIndex_(CList *l, void *o)
   int index = 0;
   for (; i < p->count * step; i += step, index++)
   {
-    if (strncmp(data + i, o, step) == 0)
+    if (memcmp(data + i, o, step) == 0)
       return index;
   }
   return -1; 
@@ -198,7 +198,7 @@ int CList_LastIndex_(CList *l, void *o)
   int index = p->count - 1;
   for (; i >= 0 ; i -= step, index--)
   {
-    if (strncmp(data + i, o, step) == 0)
+    if (memcmp(data + i, o, step) == 0)
       return index;
   }
   return -1;
