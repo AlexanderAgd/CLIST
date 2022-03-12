@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stddef.h>
 #include "clist.h"
 
 #if defined(WIN32)
@@ -40,14 +41,14 @@ int main(int argc, char **argv)
   /******************************************************* CHAR LIST */
 
   n = sizeof(char); 
-  CList *lst = CList_Init(n);
+  CList *lst = CList_init(n);
 
   for (i = 33; i < 123; i++)
   { 
     obj = &i;  
     lst->add(lst, obj); /* Adding obj items to the end of array */
   }
-  lst->print(lst, 150, "char");
+  lst->print(lst, 0, 150, "char");
 
   n = 32;
   char ch = 'A';
@@ -56,24 +57,27 @@ int main(int argc, char **argv)
 
   ch = '!';
   obj = &ch;
-  n = lst->firstIndex(lst, obj);  /* Find first index of '!' char */
+  lst->firstMatch(lst, obj, 0, 0, 0);  /* Find first match of '!' char */
+  /* You can skip (set to zero) "shift" and "size" parameters when compare whole item */
+  n = lst->index(lst);
   printf("Index of \'%c\' is %i\n", ch, n);
 
   ch = '+';
-  n = lst->firstIndex(lst, obj);
+  lst->firstMatch(lst, obj, 0, 0, 0);
+  n = lst->index(lst);
   printf("Index of \'%c\' is %i\n", ch, n);
 
   n = 0;
   for (i = 15; i > 0; i--)
     lst->remove(lst, 0); /* Remove item at index 0 from array 15 times */
 
-  lst->print(lst, 150, "char");
+  lst->print(lst, 0, 150, "char");
   lst->free(lst);
 
   /******************************************************* SHORT INT LIST */
  
   n = sizeof(short); 
-  lst = CList_Init(n); /* Always set object size you will work with */
+  lst = CList_init(n); /* Always set object size you will work with */
 
   short sh = 1001;
   for (i = 0; i < 24; i++, sh += 1000)
@@ -82,20 +86,22 @@ int main(int argc, char **argv)
     lst->add(lst, obj);
   }
 
-  lst->print(lst, 100, "short");
+  lst->print(lst, 0, 100, "short");
 
   sh = 5001;
   lst->insert(lst, &sh, 20);   /* Insert value of 'sh' to position 20 */
 
   lst->insert(lst, &sh, 25);   /* Insert value of 'sh' to position 25 */ 
-  lst->print(lst, lst->count(lst) - 1, "short");
+  lst->print(lst, 0, lst->count(lst), "short");
 
-  n = lst->lastIndex(lst, &sh); /* Find last index of '5001' short */  
+  lst->lastMatch(lst, &sh, 0, 0, 0); /* Find last match of '5001' short */ 
+  n = lst->index(lst); 
   printf("Last index of \'%i\' is %i\n", sh, n);
 
   while (n != -1)
   {
-    n = lst->firstIndex(lst, &sh); /* Find first index of '5001' short */
+    lst->firstMatch(lst, &sh, 0, 0, 0); /* Find first match of '5001' short */
+    n = lst->index(lst);
 
     if (n != -1)                   /* Remove it from the list */
       lst->remove(lst, n);
@@ -103,7 +109,7 @@ int main(int argc, char **argv)
 
   sh = 1111;
   lst->replace(lst, &sh, 0); /* Replace object at position '0' */
-  lst->print(lst, 100, "short");
+  lst->print(lst, 0, 100, "short");
 
   lst->clear(lst); /* CLear list */
   lst->free(lst);
@@ -115,7 +121,7 @@ int main(int argc, char **argv)
     long int l;
     double d;
     int s;
-    void *v;
+    char info[24];
     union u
     {
       long long lli;
@@ -125,7 +131,7 @@ int main(int argc, char **argv)
   } sample;
 
   n = sizeof(sample);
-  lst = CList_Init(n);
+  lst = CList_init(n);
 
   printf("Size of struct 'sample' = %i bytes\n", sizeof(sample));
 
@@ -137,16 +143,18 @@ int main(int argc, char **argv)
       .l = 10 * i,
       .d = 5.010101 * i,
       .s = i,
-      .v = &sam,
+      .info = "",
       .u = { .lli = 11 * i },
       .dat = &(sam.u)
     };
+
+    sprintf(sam.info, "Some string_%c", 80 + i);
 
     obj = &sam;
     lst->insert(lst, obj, n); /* Insert each object at index '0' */
   }
 
-  lst->print(lst, 20, NULL);
+  lst->print(lst, 0, 20, NULL);
 
   int j;
   int count = lst->count(lst);
@@ -160,29 +168,52 @@ int main(int argc, char **argv)
         case 0: printf("%15li ", sam->l); break;
         case 1: printf("%15lf ", sam->d); break;
         case 2: printf("%15i ", sam->s); break;
-        case 3: printf("%15p ", sam->v); break;
+        case 3: printf("%15s ", sam->info); break;
         case 4: printf("%15lli ", sam->u.lli); break;
         case 5: printf("%15p ", sam->dat); break;
         default: break;
       }
     }
-    printf("\n");
+    printf("\n\n");
   }
 
+  /* Advanced usage of firstMatch and lastMatch */
+
+  size_t shift = offsetof(struct sample, info);
+  size_t size = sizeof(sample.info);
+  int its_a_string = 1;
+  struct sample *smpl = lst->firstMatch(lst, "Some string_R", shift, size, its_a_string);
+  n = lst->index(lst);
+
+  printf("List item with index %i contains string \"%s\"\n", n, smpl->info);
+
+  long long int longValue = 55;
+  shift = offsetof(struct sample, u);
+  size = sizeof(long long int);
+  int string = 0;
+  smpl = lst->firstMatch(lst, &longValue, shift, size, string);
+  n = lst->index(lst);
+
+  printf("List item with index %i contains long long int \"%lli\"\n", n, smpl->u);
+
+  /* Print struct member  */
+
+  shift = offsetof(struct sample, info);
+  lst->print(lst, shift, 8, "string");
   lst->free(lst);
 
-  /******************************************************* POINTER LIST */
+  /******************************************************* POINTERS LIST */
 
   /* If we want create list of objects located in diffent places of memory, */
   /* let create pointers list or in our case "uintptr_t" address list       */
 
-  printf("\nSize of 'uintptr_t' = %i bytes\n", sizeof(uintptr_t));
+  printf("Size of 'uintptr_t' = %i bytes\n", sizeof(uintptr_t));
 
   n = sizeof(uintptr_t);
-  lst = CList_Init(n);
+  lst = CList_init(n);
 
-  struct sample sm1 = { 64, 6.4, 4, &n, 16, obj };
-  struct sample sm2 = { 128, 12.8, 8, &j, { 1024 }, (void*)&sh }; /* Just some sample data */
+  struct sample sm1 = { 64, 6.4, 4, "ABC company", 16, obj };
+  struct sample sm2 = { 128, 12.8, 8, "Discovery", { 1024 }, (void*)&sh }; /* Just some sample data */
 
   uintptr_t addr = (uintptr_t) &sm1;    /* Cast reference to address value */
   lst->add(lst, &addr);
@@ -194,14 +225,14 @@ int main(int argc, char **argv)
   sm3->l = 256;
   sm3->d = 25.6;
   sm3->s = 16;
-  sm3->v = &sm1;
+  strcpy(sm3->info, "TV show");
   sm3->u.lli = 2048;
   sm3->dat = (void*) &sm2;
 
   addr = (uintptr_t) sm3;
   lst->add(lst, &addr);
 
-  lst->print(lst, 20, "uintptr_t");
+  lst->print(lst, 0, 20, "uintptr_t");
 
   count = lst->count(lst);
   for (j = 0; j < 6; j++, i = 0) /* Print out struct content */
@@ -215,7 +246,7 @@ int main(int argc, char **argv)
         case 0: printf("%15li ", sam->l); break;
         case 1: printf("%15lf ", sam->d); break;
         case 2: printf("%15i ", sam->s); break;
-        case 3: printf("%15p ", sam->v); break;
+        case 3: printf("%15s ", sam->info); break;
         case 4: printf("%15lli ", sam->u.lli); break;
         case 5: printf("%15p ", sam->dat); break;
         default: break;
@@ -225,13 +256,14 @@ int main(int argc, char **argv)
   }
 
   printf("\n");
+  //lst->print(lst, shift, 3, "uintptr_t");
   free(sm3);
   lst->free(lst);
 
   /******************************************************* PERFOMANCE TEST */
 
   n = sizeof(int);
-  lst = CList_Init(n);
+  lst = CList_init(n);
 
   size_t time;
   int pos = 0;

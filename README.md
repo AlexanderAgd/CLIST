@@ -1,6 +1,6 @@
 # CLIST
 C List, universal list solution for C language. Pure C but compatible to compile with C++.    
-Supports all kind of data in a list: char, short, int, long, pointers, structs.
+Supports all kind of data in a list: char, short, int, long, pointers, structs ... 
 One struct and one init function - very easy and comfort usage, example:
 ```C
   struct unit
@@ -16,7 +16,7 @@ One struct and one init function - very easy and comfort usage, example:
   {
     struct unit U = { i, &i };
     list->add(list, &U);            /* Adding data at the end */
-    list->insert(list, &U, 0);      /* Insert at position 0 */    
+    list->insert(list, &U, 0);      /* Insert at position 0 */
   }
                                     /* Get item at position '1' */
   struct unit *tmp = (struct unit*) list->at(list, 1);  
@@ -36,21 +36,50 @@ Here CList struct with implemented functions:
 ```C
 typedef struct CList
 {
-  void  (* add)        (struct CList *l, void *o);            /* Add object to the end of a list */
-  void  (* insert)     (struct CList *l, void *o, int n);     /* Insert object at position 'n' */
-  void  (* replace)    (struct CList *l, void *o, int n);     /* Replace object at position 'n' */
-  void  (* remove)     (struct CList *l, int n);              /* Remove object at position 'n' */
-  void* (* at)         (struct CList *l, int n);              /* Get object at position 'n' */
-  int   (* realloc)    (struct CList *l, int n);              /* Reallocate list to 'n' items */
-  int   (* firstIndex) (struct CList *l, void *o);            /* Get first index of the object */
-  int   (* lastIndex)  (struct CList *l, void *o);            /* Get last index of the object */
-  int   (* count)      (struct CList *l);                     /* Get list size */
-  void  (* clear)      (struct CList *l);                     /* Clear list */
-  void  (* free)       (struct CList *l);                     /* Destroy struct CList and all data */
-  void  (* print)      (struct CList *l, int n, const char *type);  /* Print list data */
-  void* priv;          /* NOT FOR USE, private data */
+  void * (* add)         (struct CList *l, void *o);            /* Add object to the end of a list */
+  void * (* insert)      (struct CList *l, void *o, int n);     /* Insert object at position 'n' */
+  void * (* replace)     (struct CList *l, void *o, int n);     /* Replace object at position 'n' */
+  void   (* remove)      (struct CList *l, int n);              /* Remove object at position 'n' */
+  void * (* at)          (struct CList *l, int n);              /* Get object at position 'n' */
+  int    (* realloc)     (struct CList *l, int n);              /* Reallocate list to 'size' items */
+  int    (* count)       (struct CList *l);                     /* Get list size in items */
+  void * (* firstMatch)  (struct CList *l, const void *o, size_t shift, size_t size, int string);
+                                                                /* Returns object with first match of string or byte compare */
+  void * (* lastMatch)   (struct CList *l, const void *o, size_t shift, size_t size, int string);
+                                                                /* Returns object with last match of string or byte compare */
+  int    (* index)       (struct CList *l);                     /* Get index of previos search match */
+  int    (* swap)        (struct CList *l, int a, int b);       /* Swap, replace two items with index a b */
+  int    (* allocSize)   (struct CList *l);                     /* Get allocated size in items */
+  size_t (* itemSize)    (struct CList *l);                     /* Get item size in bytes */
+  void   (* print)       (struct CList *l, size_t shift, int n, const char *type);   /* Print list data */
+  void   (* clear)       (struct CList *l);                     /* Clear list */
+  void   (* free)        (struct CList *l);                     /* Destroy struct CList and all data */
+  void  *priv;           /* NOT FOR USE, private data */
 } CList;
 ```
+Impoved search functions, now we have firstMatch and lastMatch to search data in a list, 
+firstMatch starts search from 0 to last list item and lastMatch search from last to 0.
+New functions allow compare whole list item or any member of it in case item is struct or class.
+These functions use string compare or memory compare depend on last parameter "int string".
+Second parameter "const void *o" pointer to data we are comparing.
+Third parameter "size_t shift" is difference in bytes from struct pointer to struct member 
+we want to compare, you can use "offsetof" function or just 0 if scanning whole list item.
+Fourth paramerer "size_t size" is max length or size of member to be compared.
+When we compare whole struct or other kind of list item shift is 0 and size can be set to 0, 
+when shift and size is 0 - size will be set as "itemSize" automatically.
+```C
+firstMatch(struct CList *l, const void *o, size_t shift, size_t size, int string);
+/* Examples of usage */
+long int objToCompare = 5;
+struct unit *un = list->firstMatch(list, &objToCompare, 0, sizeof(long int), 0);
+void *ptrToCmp = 0x7fff2f3f9ca0;
+un = list->firstMatch(list, ptrToCmp, offsetof(struct unit, ptr), sizeof(void*), 0);
+un->size = 8;
+un->ptr = 0x7fff2f3f9ca0;
+un = list->firstMatch(list, &un, 0, 0, 0);
+/* To compare whole struct (list item) shift is 0 and size can be set to 0 */
+/* Check usage at test.c file */
+```  
 If you are working with a huge number of elements and think that your list holds 
 a lot of memory or you do not plan add more items, you can use "realloc" and 
 specify an exact number of items in the list:
@@ -58,13 +87,7 @@ specify an exact number of items in the list:
 int num = list->count(list);
 list->realloc(list, num);
 ```
-You can check also BlockList version of CList, it has more computations 
-and a little slow to compare to current list, but uses less memory at some points. 
-Block list allocates and deallocates memory automatically by memory blocks. It's a mix 
-of linked list and dynamic list.   
-Check also standard C linked list at folder LinkedList. It's classic C list with nodes.
-Run tests and check how fast is these lists.
-The fastest is currect "CList", then block list "BList", and linked list "List" is last.
+Read test.c file for usage examples.
 
 ## Build
 Clean and build:
