@@ -6,26 +6,37 @@ One struct and one init function - very easy and comfort usage, example:
   struct unit
   {
     long int size;
-    void *ptr;
+    char str[24];
   } unit;
 
-  CList *list = CList_Init(sizeof(unit));     /* Initialization */
+  char info[24] = "Random_Information";
+
+  CList *list = CList_init(sizeof(unit));     /* Initialization */
  
-  long int i; 
-  for (i = 0; i < 10; i++)
+  struct unit U;
+  long int l;
+  for (l = 0; l < 10; l++)
   {
-    struct unit U = { i, &i };
-    list->add(list, &U);            /* Adding data at the end */
-    list->insert(list, &U, 0);      /* Insert at position 0 */
+    U.size = l;
+    sprintf(U.str, info + l);
+    list->add(list, &U);             /* Adding data at the end */
+    list->insert(list, &U, 0);       /* Insert at position 0 */
   }
-                                    /* Get item at position '1' */
-  struct unit *tmp = (struct unit*) list->at(list, 1);  
-  printf("Unit size is %li, pointer is %p \n", tmp->size, tmp->ptr);
+                                     /* Get item at position '2' */
+  struct unit *tmp = list->at(list, 2);
+  printf("Unit at index 2: size is %li, string is \"%s\"\n", tmp->size, tmp->str);
 
-  i = list->count(list);            /* Get number of items in the list */
-  list->print(list, 0, i, "long");  /* Print out 'i' elements of list, first element of struct is shown */
+  l = list->count(list);             /* Get number of items in the list */
+  list->print(list, 0, l, "long");   /* Print out 'l' elements of list, first member of struct is printed */
+  size_t step = offsetof(struct unit, str);
+  list->print(list, step, l, "string");
+                                     /* Print out 'l' elements of list, second member of struct is printed */
+  tmp = list->lastMatch(list, "Information", step, 24, 1);
+                                     /* Find last struct with second member "Information" */
+  int position = list->index(list);  /* Get index of previous search */
+  printf("Item with index %i has string \"%s\" \n\n", position, tmp->str);
 
-  list->free(list);                 /* Destroy all data and list */ 
+  list->free(list);                  /* Destroy all data and list */
 ``` 
 
 Code may be used as static library or just included in your own code as object.
