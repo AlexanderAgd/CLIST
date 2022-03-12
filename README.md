@@ -23,7 +23,7 @@ One struct and one init function - very easy and comfort usage, example:
   printf("Unit size is %li, pointer is %p \n", tmp->size, tmp->ptr);
 
   i = list->count(list);            /* Get number of items in the list */
-  list->print(list, i, "long");     /* Print out 'i' elements of list, first element of struct is shown */
+  list->print(list, 0, i, "long");  /* Print out 'i' elements of list, first element of struct is shown */
 
   list->free(list);                 /* Destroy all data and list */ 
 ``` 
