@@ -80,15 +80,6 @@ When we compare whole struct or other kind of list item shift is 0 and size can 
 when shift and size is 0 - size will be set as "itemSize" automatically.
 ```C
 firstMatch(struct CList *l, const void *o, size_t shift, size_t size, int string);
-/* Examples of usage */
-long int objToCompare = 5;
-struct unit *un = list->firstMatch(list, &objToCompare, 0, sizeof(long int), 0);
-void *ptrToCmp = 0x7fff2f3f9ca0;
-un = list->firstMatch(list, ptrToCmp, offsetof(struct unit, ptr), sizeof(void*), 0);
-un->size = 8;
-un->ptr = 0x7fff2f3f9ca0;
-un = list->firstMatch(list, &un, 0, 0, 0);
-/* To compare whole struct (list item) shift is 0 and size can be set to 0 */
 /* Check usage at test.c file */
 ```  
 If you are working with a huge number of elements and think that your list holds 
