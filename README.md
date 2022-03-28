@@ -68,7 +68,7 @@ typedef struct CList
   void  *priv;           /* NOT FOR USE, private data */
 } CList;
 ```
-Impoved search functions, now we have firstMatch and lastMatch to search data in a list, 
+Improved search functions, now we have firstMatch and lastMatch to search data in a list, 
 firstMatch starts search from 0 to last list item and lastMatch search from last to 0.
 New functions allow compare whole list item or any member of it in case item is struct or class.
 These functions use string compare or memory compare depend on last parameter "int string".
